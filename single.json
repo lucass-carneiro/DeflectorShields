@@ -1,0 +1,12 @@
+{
+    "spacetime": "Minkowski",
+    "particle": {
+        "x1": 0.0,
+        "x2": 0.0,
+        "x3": 0.0,
+        "p1": 0.1,
+        "p2": 0.0,
+        "p3": 0.0
+    },
+    "normalize_as": "Photon"
+}
