@@ -27,7 +27,7 @@ impl Metric for Minkowski {
             + guu[(3, 3)] * p[3] * p[3])
     }
 
-    fn hamiltonian_derivs(&self, p: Vector4<f64>, x: Vector4<f64>) -> Matrix4x2<f64> {
+    fn hamiltonian_derivs(&self, p: Vector4<f64>, _: Vector4<f64>) -> Matrix4x2<f64> {
         let dh_dp = Vector4::new(-p[0], p[1], p[2], p[3]);
         let dh_dq = Vector4::from_element(0.0);
         Matrix4x2::from_columns(&[dh_dp, dh_dq])

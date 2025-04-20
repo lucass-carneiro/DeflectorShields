@@ -24,10 +24,17 @@ pub struct ParticleData {
 }
 
 #[derive(Debug, serde::Deserialize)]
+pub struct TimeData {
+    pub tf: f64,
+    pub dt: f64,
+}
+
+#[derive(Debug, serde::Deserialize)]
 pub struct SingleParams {
     pub spacetime: Spacetime,
     pub particle: ParticleData,
     pub normalize_as: Normalization,
+    pub time_integration: TimeData,
 }
 
 pub fn read_params(file_name: &str) -> Result<SingleParams, ParamError> {
