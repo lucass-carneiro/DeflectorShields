@@ -1,3 +1,5 @@
+use metrics::Metric;
+
 mod errors;
 mod evolve;
 mod logging;
@@ -27,6 +29,11 @@ fn main() {
         }
     };
 
+    // Time step data
+    let tf = par.time_integration.tf;
+    let dt = par.time_integration.dt;
+    let nt = (f64::ceil(tf / dt) as u64) + 1;
+
     // Normalize and evolve
     match par.spacetime {
         params::Spacetime::Minkowski => {
@@ -37,14 +44,8 @@ fn main() {
 
             log::info!("Normalized initial p_0 is {}", state.p[0]);
 
-            // TODO: tmp
-            let tf = 10.0;
-            let n = 100;
-            let h = tf / ((n - 1) as f64);
-
-            for i in 0..n {
-                let t = (i as f64) * h;
-                evolve::rk4_step(&mut state, &metric, h);
+            for i in 0..nt {
+                let t = (i as f64) * dt;
                 log::info!(
                     "({t}, {}, {}, {}, {})",
                     state.x[0],
@@ -52,9 +53,13 @@ fn main() {
                     state.x[2],
                     state.x[3]
                 );
+                evolve::rk4_step(&mut state, &metric, dt);
             }
         }
 
-        params::Spacetime::Alcubierre => return,
+        params::Spacetime::Alcubierre => {
+            // TODO
+            return;
+        }
     }
 }
