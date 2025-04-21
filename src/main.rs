@@ -1,11 +1,11 @@
-use metrics::Metric;
-
+mod alcubierre;
 mod errors;
 mod evolve;
 mod logging;
 mod metrics;
 mod minkowski;
 mod params;
+mod tsv;
 
 fn main() {
     logging::init_logger();
@@ -34,6 +34,9 @@ fn main() {
     let dt = par.time_integration.dt;
     let nt = (f64::ceil(tf / dt) as u64) + 1;
 
+    // Output file
+    let mut output_file = tsv::make_file("out.tsv"); // TODO: Make this configurable via parameter file
+
     // Normalize and evolve
     match par.spacetime {
         params::Spacetime::Minkowski => {
@@ -46,13 +49,7 @@ fn main() {
 
             for i in 0..nt {
                 let t = (i as f64) * dt;
-                log::info!(
-                    "({t}, {}, {}, {}, {})",
-                    state.x[0],
-                    state.x[1],
-                    state.x[2],
-                    state.x[3]
-                );
+                tsv::append_data(&mut output_file, i, t, &state);
                 evolve::rk4_step(&mut state, &metric, dt);
             }
         }
