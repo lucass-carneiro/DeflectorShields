@@ -1,7 +1,6 @@
 {
-    "spacetime": "Minkowski",
     "particle": {
-        "x1": 0.0,
+        "x1": 2.0,
         "x2": 0.0,
         "x3": 0.0,
         "p1": 0.1,
@@ -10,7 +9,7 @@
     },
     "normalize_as": "Massive",
     "time_integration": {
-        "tf": 10.0,
+        "tf": 100.0,
         "dt": 0.1
     }
 }

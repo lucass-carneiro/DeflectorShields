@@ -1,12 +1,6 @@
 use crate::errors::ParamError;
 
 #[derive(Debug, serde::Deserialize)]
-pub enum Spacetime {
-    Minkowski,
-    Alcubierre,
-}
-
-#[derive(Debug, serde::Deserialize)]
 pub enum Normalization {
     Massive,
     Photon,
@@ -31,7 +25,6 @@ pub struct TimeData {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct SingleParams {
-    pub spacetime: Spacetime,
     pub particle: ParticleData,
     pub normalize_as: Normalization,
     pub time_integration: TimeData,
