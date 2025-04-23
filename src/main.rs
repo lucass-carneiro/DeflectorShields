@@ -35,28 +35,23 @@ fn main() {
     let nt = (f64::ceil(tf / dt) as u64) + 1;
 
     // Output file
-    let mut output_file = tsv::make_file("out.tsv"); // TODO: Make this configurable via parameter file
+    let mut output_file = tsv::make_file("out.tsv");
+
+    // Spacetime metric
+    let metric = alcubierre::Alcubierre::new(0.5, 0.5, 1.0);
 
     // Normalize and evolve
-    match par.spacetime {
-        params::Spacetime::Minkowski => {
-            let metric = minkowski::Minkowski {};
+    log::info!("Normalizing initial p_0");
+    let mut state = evolve::normalize(par, &metric).unwrap();
 
-            log::info!("Normalizing initial p_0");
-            let mut state = evolve::normalize(par, &metric).unwrap();
+    log::info!("Normalized initial p_0 is {}", state.p[0]);
 
-            log::info!("Normalized initial p_0 is {}", state.p[0]);
+    for i in 0..nt {
+        let t = (i as f64) * dt;
 
-            for i in 0..nt {
-                let t = (i as f64) * dt;
-                tsv::append_data(&mut output_file, i, t, &state);
-                evolve::rk4_step(&mut state, &metric, dt);
-            }
-        }
+        log::info!("Evolution step {}, t = {}", i, t);
 
-        params::Spacetime::Alcubierre => {
-            // TODO
-            return;
-        }
+        tsv::append_data(&mut output_file, i, t, &state);
+        evolve::rk4_step(&mut state, &metric, dt);
     }
 }

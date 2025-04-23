@@ -26,7 +26,7 @@ pub fn normalize<T: Metric>(
         params.particle.x3,
     );
 
-    let guu = metric.g_uu(x);
+    let guu = metric.g_uu(&x);
 
     let mut p = Vector4::new(
         0.0,
@@ -71,7 +71,7 @@ pub fn normalize<T: Metric>(
 }
 
 pub fn rhs<T: Metric>(state: &StateVector, metric: &T) -> StateVector {
-    let ham_derivs = metric.hamiltonian_derivs(state.p, state.x);
+    let ham_derivs = metric.hamiltonian_derivs(&state.p, &state.x);
 
     let p_rhs = -Vector4::new(
         ham_derivs[(0, 1)],
