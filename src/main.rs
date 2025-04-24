@@ -56,9 +56,9 @@ fn main() {
                 let t = (i as f64) * par.affine_data.dlambda;
                 log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
 
-                rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
-
                 out_file.append(i, t, &state);
+
+                rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
             }
 
             log::info!("Single particle mode finished");
