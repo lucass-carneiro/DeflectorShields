@@ -1,0 +1,20 @@
+{
+    "alcubierre_data": {
+        "v": 0.5,
+        "sigma": 1.0,
+        "radius": 1.0
+    },
+    "normalize_as": "Massive",
+    "affine_data": {
+        "lambda_max": 100.0,
+        "dlambda": 0.1
+    },
+    "single_particle_id": {
+        "x0": 2.0,
+        "y0": 0.0,
+        "z0": 0.0,
+        "px0": 0.0,
+        "py0": 0.0,
+        "pz0": 0.0
+    }
+}

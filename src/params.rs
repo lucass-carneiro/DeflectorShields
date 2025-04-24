@@ -1,36 +1,32 @@
+use crate::alcubierre::AlcubierreData;
 use crate::errors::ParamError;
+use crate::types::ParticleType;
 
 #[derive(Debug, serde::Deserialize)]
-pub enum Normalization {
-    Massive,
-    Photon,
+pub struct AffineData {
+    pub lambda_max: f64,
+    pub dlambda: f64,
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub struct ParticleData {
-    pub x1: f64,
-    pub x2: f64,
-    pub x3: f64,
-
-    pub p1: f64,
-    pub p2: f64,
-    pub p3: f64,
+pub struct SingleParticleID {
+    pub x0: f64,
+    pub y0: f64,
+    pub z0: f64,
+    pub px0: f64,
+    pub py0: f64,
+    pub pz0: f64,
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub struct TimeData {
-    pub tf: f64,
-    pub dt: f64,
+pub struct Params {
+    pub alcubierre_data: AlcubierreData,
+    pub normalize_as: ParticleType,
+    pub affine_data: AffineData,
+    pub single_particle_id: Option<SingleParticleID>,
 }
 
-#[derive(Debug, serde::Deserialize)]
-pub struct SingleParams {
-    pub particle: ParticleData,
-    pub normalize_as: Normalization,
-    pub time_integration: TimeData,
-}
-
-pub fn read_params(file_name: &str) -> Result<SingleParams, ParamError> {
+pub fn read_params(file_name: &str) -> Result<Params, ParamError> {
     let par_file = match std::fs::read_to_string(file_name) {
         Ok(o) => o,
         Err(e) => {
@@ -41,7 +37,7 @@ pub fn read_params(file_name: &str) -> Result<SingleParams, ParamError> {
         }
     };
 
-    match serde_json::from_str::<SingleParams>(&par_file) {
+    match serde_json::from_str::<Params>(&par_file) {
         Ok(o) => Ok(o),
         Err(e) => Err(ParamError::FileParseError {
             file_name: String::from(file_name),

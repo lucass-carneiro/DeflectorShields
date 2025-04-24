@@ -1,4 +1,4 @@
-use crate::params::Normalization;
+use crate::types::ParticleType;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ParamError {
@@ -16,10 +16,14 @@ pub enum ParamError {
 }
 
 #[derive(thiserror::Error, Debug)]
-#[error("The 4 momentum ({p1}, {p2}, {p3}) is unnormalizable as a {normalization:?}")]
+#[error("State q = ({t}, {x}, {y}, {z}) p = (?, {px}, {py}, {pz}) is not normalizable")]
 pub struct NormalizationError {
-    pub normalization: Normalization,
-    pub p1: f64,
-    pub p2: f64,
-    pub p3: f64,
+    pub particle_type: ParticleType,
+    pub t: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub px: f64,
+    pub py: f64,
+    pub pz: f64,
 }
