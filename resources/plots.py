@@ -9,6 +9,7 @@ Options:
   -h --help     Show this screen.
   --version     Show version.
 """
+import logging
 from docopt import docopt
 
 import os
@@ -16,12 +17,14 @@ import sys
 import subprocess
 import shutil
 import json
+import concurrent.futures as ccf
 import pandas as pd
 import numpy as np
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+mpl.use("agg")  # This prevents a GUI to lunch on multiple threads
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -86,6 +89,31 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
+def plot_single_kernel(anim_file_name, v, t, x, y, X, Y, Z):
+    plt.close("all")
+
+    # Bubble
+    plt.contourf(X, Y, Z, 1000, cmap="viridis")
+
+    # Particle
+    plt.scatter(x, y, marker="o", color="tab:red", s=2)
+
+    # Ship
+    plt.scatter(v * t, 0.0, marker="o", color="black", s=2)
+
+    plt.xlabel(r"$x$")
+    plt.ylabel(r"$y$")
+
+    title_a = r"$t = "
+    title_b = r"$"
+    plt.title(f"{title_a}{t:.2f}{title_b}")
+
+    plt.colorbar()
+
+    plt.tight_layout()
+    plt.savefig(anim_file_name, dpi=300)
+
+
 def plot_single(data, v, sigma, radius):
     logger.info("Plotting single particle data")
 
@@ -102,39 +130,30 @@ def plot_single(data, v, sigma, radius):
 
     nt = len(df)
 
-    for it in range(0, nt):
-        logger.info(f"Plotting frame {it + 1}/{nt}")
+    logger.info(f"Submitting plotting jobs to pool")
 
-        anim_file_name = os.path.join(anim_folder, f"{name}_{it:08d}.png")
+    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+        for it in range(0, nt):
+            anim_file_name = os.path.join(anim_folder, f"{name}_{it:08d}.png")
+            t = df.iloc[it][header[2]]
+            x = df.iloc[it][header[3]]
+            y = df.iloc[it][header[4]]
 
-        t = df.iloc[it][header[2]]
-        x = df.iloc[it][header[3]]
-        y = df.iloc[it][header[4]]
+            Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
 
-        Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
+            executor.submit(
+                plot_single_kernel,
+                anim_file_name,
+                v,
+                t,
+                x,
+                y,
+                X,
+                Y,
+                Z
+            )
 
-        plt.close("all")
-
-        # Bubble
-        plt.contourf(X, Y, Z, 1000, cmap="viridis")
-
-        # Particle
-        plt.scatter(x, y, marker="o", color="tab:red", s=2)
-
-        # Ship
-        plt.scatter(v * t, 0.0, marker="o", color="black", s=2)
-
-        plt.xlabel(r"$x$")
-        plt.ylabel(r"$y$")
-
-        title_a = r"$t = "
-        title_b = r"$"
-        plt.title(f"{title_a}{t:.2f}{title_b}")
-
-        plt.colorbar()
-
-        plt.tight_layout()
-        plt.savefig(anim_file_name, dpi=300)
+        logger.info(f"Waiting for plotting jobs to finish")
 
     logger.info(f"Animating frames with ffmpeg")
     subprocess.run([
