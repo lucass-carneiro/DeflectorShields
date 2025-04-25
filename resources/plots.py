@@ -18,7 +18,7 @@ import subprocess
 import shutil
 import json
 import concurrent.futures as ccf
-import pandas as pd
+import polars as pl
 import numpy as np
 
 import matplotlib as mpl
@@ -59,17 +59,19 @@ def read_tsv(file, read_header=True):
         header = None
 
     if read_header:
-        df = pd.read_csv(
+        df = pl.read_csv(
             file,
-            sep="\\s+",
-            comment="#",
-            names=header
+            has_header=False,
+            separator="\t",
+            comment_prefix="#",
+            new_columns=header
         )
     else:
-        df = pd.read_csv(
+        df = pl.read_csv(
             file,
-            sep="\\s+",
-            header=None
+            has_header=False,
+            separator="\t",
+            comment_prefix="#"
         )
 
     return (name, header, df)
@@ -135,9 +137,9 @@ def plot_single(data, v, sigma, radius):
     with ccf.ProcessPoolExecutor(max_workers=8) as executor:
         for it in range(0, nt):
             anim_file_name = os.path.join(anim_folder, f"{name}_{it:08d}.png")
-            t = df.iloc[it][header[2]]
-            x = df.iloc[it][header[3]]
-            y = df.iloc[it][header[4]]
+            t = df.item(it, header[2])
+            x = df.item(it, header[3])
+            y = df.item(it, header[4])
 
             Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
 
