@@ -13,7 +13,7 @@ impl TSVFile {
         let mut file = File::create(file_name).unwrap();
         writeln!(
             &mut file,
-            "# 1: Iteration 2:Lambda 3:t 4:x 5:y 6:z 7:pt 8:px 9:py 10:pz"
+            "# 1:Iteration 2:Lambda 3:t 4:x 5:y 6:z 7:pt 8:px 9:py 10:pz"
         )
         .unwrap();
         TSVFile { file }

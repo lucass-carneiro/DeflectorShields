@@ -1,10 +1,10 @@
-use evolve::rk4_step;
+use std::env;
 
 mod alcubierre;
 mod errors;
 mod evolve;
+mod output;
 mod params;
-mod tsv;
 mod types;
 
 fn init_logger() {
@@ -29,7 +29,14 @@ fn init_logger() {
 fn main() {
     init_logger();
 
-    let par = params::read_params("params.json").unwrap();
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 3 {
+        println!("Usage: {} <parameter-file> <output-file>", args[0]);
+        return;
+    }
+
+    let par = params::read_params(&args[1]).unwrap();
 
     match par.single_particle_id {
         Some(id) => {
@@ -48,7 +55,7 @@ fn main() {
                 )
                 .unwrap();
 
-            let mut out_file = tsv::TSVFile::new("single.tsv");
+            let mut out_file = output::TSVFile::new(&args[2]);
 
             let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as u64;
 
@@ -58,7 +65,7 @@ fn main() {
 
                 out_file.append(i, t, &state);
 
-                rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
+                evolve::rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
             }
 
             log::info!("Single particle mode finished");
