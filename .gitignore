@@ -2,6 +2,6 @@
 
 Cargo.lock
 
-*.tsv
+*.ipc
 *.mp4
 /*.json
