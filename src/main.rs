@@ -36,7 +36,10 @@ fn main() {
         return;
     }
 
-    let par = params::read_params(&args[1]).unwrap();
+    let param_file_name = &args[1];
+    let output_file_name = &args[2];
+
+    let par = params::read_params(param_file_name).unwrap();
 
     match par.single_particle_id {
         Some(id) => {
@@ -55,7 +58,7 @@ fn main() {
                 )
                 .unwrap();
 
-            let mut out_file = output::TSVFile::new(&args[2]);
+            let mut out_file = output::IpcFile::new();
 
             let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as u64;
 
@@ -67,6 +70,8 @@ fn main() {
 
                 evolve::rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
             }
+
+            out_file.write(output_file_name);
 
             log::info!("Single particle mode finished");
         }

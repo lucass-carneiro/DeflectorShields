@@ -36,43 +36,14 @@ mpl.rcParams["text.usetex"] = True
 mpl.rcParams['lines.linewidth'] = 1.3
 
 
-def parse_header(file):
-    with open(file, "r") as f:
-        for line in f:
-            if line.startswith("#"):
-                header = line
-            else:
-                break
-
-    return header[1:].strip().split()
-
-
-def read_tsv(file, read_header=True):
-    logger.info(f"Reading TSV file {file}")
+def read_ipc(file):
+    logger.info(f"Reading ipc file {file}")
 
     basename = os.path.basename(file)
     name, _ = os.path.splitext(basename)
 
-    if read_header:
-        header = parse_header(file)
-    else:
-        header = None
-
-    if read_header:
-        df = pl.read_csv(
-            file,
-            has_header=False,
-            separator="\t",
-            comment_prefix="#",
-            new_columns=header
-        )
-    else:
-        df = pl.read_csv(
-            file,
-            has_header=False,
-            separator="\t",
-            comment_prefix="#"
-        )
+    df = pl.read_ipc(file, memory_map=False)
+    header = df.columns
 
     return (name, header, df)
 
@@ -186,7 +157,7 @@ def main(args):
         output_file = args["<data-file>"]
 
         single_particle_par_file = read_parameter_file(parameter_file)
-        single_particle_data = read_tsv(output_file)
+        single_particle_data = read_ipc(output_file)
 
         plot_single(
             single_particle_data,
