@@ -138,7 +138,7 @@ def plot_single(data, v, sigma, radius):
         "-i",
         os.path.join(anim_folder, f"{name}_%08d.png"),
         "-c:v",
-        "libx264rgb",
+        "libx264",
         "-crf",
         "0",
         f"{name}_anim.mp4"
@@ -231,7 +231,7 @@ def plot_multiple(prefix, v, sigma, radius):
         "-i",
         os.path.join(anim_folder, f"{prefix}_%08d.png"),
         "-c:v",
-        "libx264rgb",
+        "libx264",
         "-crf",
         "0",
         f"{prefix}_anim.mp4"
