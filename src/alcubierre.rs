@@ -78,7 +78,7 @@ impl AlcubierreData {
         px: f64,
         py: f64,
         pz: f64,
-        particle_type: ParticleType,
+        particle_type: &ParticleType,
     ) -> Result<ParticleState<f64>, NormalizationError> {
         let fr = self.f(&nalgebra::Vector4::new(0.0, x, y, z));
 
@@ -94,7 +94,7 @@ impl AlcubierreData {
 
         if delta < 0.0 {
             Err(NormalizationError {
-                particle_type,
+                particle_type: *particle_type,
                 t: 0.0,
                 x,
                 y,
@@ -105,18 +105,6 @@ impl AlcubierreData {
             })
         } else {
             let pt = (-b + f64::sqrt(delta)) / (2.0 * a);
-
-            log::info!(
-                "Normalized state q = ({}, {}, {}, {}) p = ({}, {}, {}, {})",
-                0.0,
-                x,
-                y,
-                z,
-                pt,
-                px,
-                py,
-                pz
-            );
 
             Ok(ParticleState::from_column_slice(&[
                 0.0, x, y, z, pt, px, py, pz,

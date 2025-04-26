@@ -2,6 +2,7 @@
 
 Usage:
   plots.py single <parameter-file> <data-file>
+  plots.py multiple <parameter-file> <data-file-prefix>
   plots.py (-h | --help)
   plots.py --version
 
@@ -149,6 +150,99 @@ def plot_single(data, v, sigma, radius):
     logger.info(f"Done")
 
 
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, X, Y):
+    ipc_file = os.path.join(prefix, ipc_file_name)
+    df = pl.read_ipc(ipc_file, memory_map=False)
+
+    it = int(df.item(0, 0))
+    anim_file_name = os.path.join(anim_folder, f"{prefix}_{it:08d}.png")
+
+    t = df.item(2, 0)
+
+    Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
+
+    plt.close("all")
+
+    # Bubble
+    plt.contourf(X, Y, Z, 1000, cmap="viridis")
+
+    # Ship
+    plt.scatter(v * t, 0.0, marker="o", color="black", s=2)
+
+    # Particles
+    for i in range(0, len(df.columns)):
+        x = df.item(3, i)
+        y = df.item(4, i)
+        plt.scatter(x, y, marker="o", color="tab:red", s=2)
+
+    plt.xlabel(r"$x$")
+    plt.ylabel(r"$y$")
+
+    title_a = r"$t = "
+    title_b = r"$"
+    plt.title(f"{title_a}{t:.2f}{title_b}")
+
+    plt.colorbar()
+
+    plt.tight_layout()
+    plt.savefig(anim_file_name, dpi=300)
+
+
+def plot_multiple(prefix, v, sigma, radius):
+    logger.info("Plotting multiple particle data")
+
+    anim_folder = f"{prefix}_anim"
+
+    if not os.path.exists(anim_folder):
+        logger.info(f"Creating temporary frames folder")
+        os.mkdir(anim_folder)
+
+    ipc_file_list = os.listdir(prefix)
+
+    x = np.linspace(0.0, 20.0, 100)
+    y = np.linspace(-10, 10.0, 100)
+    X, Y = np.meshgrid(x, y)
+
+    # for every file
+    logger.info(f"Submitting plotting jobs to pool")
+
+    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+        for ipc_file in ipc_file_list:
+            executor.submit(
+                plot_multiple_kernel,
+                prefix,
+                ipc_file,
+                anim_folder,
+                v,
+                sigma,
+                radius,
+                X,
+                Y
+            )
+
+        logger.info(f"Waiting for plotting jobs to finish")
+
+    logger.info(f"Animating frames with ffmpeg")
+    subprocess.run([
+        "ffmpeg",
+        "-y",
+        "-framerate",
+        "15",
+        "-i",
+        os.path.join(anim_folder, f"{prefix}_%08d.png"),
+        "-c:v",
+        "libx264rgb",
+        "-crf",
+        "0",
+        f"{prefix}_anim.mp4"
+    ])
+
+    logger.info(f"Removing temporary frames folder")
+    shutil.rmtree(anim_folder)
+
+    logger.info(f"Done")
+
+
 def main(args):
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -161,6 +255,18 @@ def main(args):
 
         plot_single(
             single_particle_data,
+            single_particle_par_file["alcubierre_data"]["v"],
+            single_particle_par_file["alcubierre_data"]["sigma"],
+            single_particle_par_file["alcubierre_data"]["radius"]
+        )
+    elif args["multiple"]:
+        parameter_file = args["<parameter-file>"]
+        output_file_prefix = args["<data-file-prefix>"]
+
+        single_particle_par_file = read_parameter_file(parameter_file)
+
+        plot_multiple(
+            output_file_prefix,
             single_particle_par_file["alcubierre_data"]["v"],
             single_particle_par_file["alcubierre_data"]["sigma"],
             single_particle_par_file["alcubierre_data"]["radius"]
