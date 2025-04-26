@@ -3,6 +3,7 @@ use std::env;
 mod alcubierre;
 mod errors;
 mod evolve;
+mod multi_ids;
 mod output;
 mod params;
 mod types;
@@ -41,41 +42,71 @@ fn main() {
 
     let par = params::read_params(param_file_name).unwrap();
 
-    match par.single_particle_id {
-        Some(id) => {
-            log::info!("Single particle mode");
+    if par.single_particle_id.is_some() && par.multi_particle_id.is_none() {
+        log::info!("Single particle mode");
 
-            let mut state = par
-                .alcubierre_data
-                .make_normalized_state(
-                    id.x0,
-                    id.y0,
-                    id.z0,
-                    id.px0,
-                    id.py0,
-                    id.pz0,
-                    par.normalize_as,
-                )
-                .unwrap();
+        let id = &par.single_particle_id.unwrap();
 
-            let mut out_file = output::IpcFile::new();
+        let mut state = par
+            .alcubierre_data
+            .make_normalized_state(
+                id.x0,
+                id.y0,
+                id.z0,
+                id.px0,
+                id.py0,
+                id.pz0,
+                &par.normalize_as,
+            )
+            .unwrap();
 
-            let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as u64;
+        let mut out_file = output::IpcFile::new();
 
-            for i in 0..=nlambda {
-                let t = (i as f64) * par.affine_data.dlambda;
-                log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
+        let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as u64;
 
-                out_file.append(i, t, &state);
+        for i in 0..=nlambda {
+            let t = (i as f64) * par.affine_data.dlambda;
+            log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
 
-                evolve::rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
-            }
+            out_file.append(i, t, &state);
 
-            out_file.write(output_file_name);
-
-            log::info!("Single particle mode finished");
+            evolve::rk4_step(par.affine_data.dlambda, &par.alcubierre_data, &mut state);
         }
 
-        None => log::info!("Multi particle mode not implemented yet"),
+        out_file.write(output_file_name);
+
+        log::info!("Single particle mode finished");
+    } else if par.multi_particle_id.is_some() && par.single_particle_id.is_none() {
+        log::info!("Multiple particles mode");
+
+        let id = par.multi_particle_id.unwrap();
+
+        let mut states =
+            multi_ids::make_multi_id(id, &par.normalize_as, &par.alcubierre_data).unwrap();
+
+        let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as usize;
+
+        for i in 0..=nlambda {
+            let t = (i as f64) * par.affine_data.dlambda;
+            log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
+
+            let mut out_file = output::IpcMultiFile::new();
+
+            for particle_idx in 0..states.len() {
+                out_file.append(particle_idx, i, t, &states[particle_idx]);
+
+                evolve::rk4_step(
+                    par.affine_data.dlambda,
+                    &par.alcubierre_data,
+                    &mut states[particle_idx],
+                );
+            }
+
+            out_file.write(&output_file_name, i);
+        }
+    } else {
+        log::error!(
+            "Cannot operate when both multi and single particle initial conditions are provided"
+        );
     }
 }

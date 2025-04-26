@@ -1,0 +1,19 @@
+{
+    "alcubierre_data": {
+        "v": 0.5,
+        "sigma": 1.0,
+        "radius": 1.0
+    },
+    "normalize_as": "Massive",
+    "affine_data": {
+        "lambda_max": 19.0,
+        "dlambda": 0.1
+    },
+    "multi_particle_id": {
+        "StaticWall": {
+            "position": 2.5,
+            "extent": 2.0,
+            "num": 4
+        }
+    }
+}

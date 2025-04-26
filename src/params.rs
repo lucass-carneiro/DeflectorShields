@@ -19,11 +19,21 @@ pub struct SingleParticleID {
 }
 
 #[derive(Debug, serde::Deserialize)]
+pub enum MultiParticleID {
+    StaticWall {
+        position: f64,
+        extent: f64,
+        num: u64,
+    },
+}
+
+#[derive(Debug, serde::Deserialize)]
 pub struct Params {
     pub alcubierre_data: AlcubierreData,
     pub normalize_as: ParticleType,
     pub affine_data: AffineData,
     pub single_particle_id: Option<SingleParticleID>,
+    pub multi_particle_id: Option<MultiParticleID>,
 }
 
 pub fn read_params(file_name: &str) -> Result<Params, ParamError> {
