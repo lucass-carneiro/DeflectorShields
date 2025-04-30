@@ -24,6 +24,8 @@ import numpy as np
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from PIL import Image
 mpl.use("agg")  # This prevents a GUI to lunch on multiple threads
 
 logger = logging.getLogger(__name__)
@@ -106,7 +108,7 @@ def plot_single(data, v, sigma, radius):
 
     logger.info(f"Submitting plotting jobs to pool")
 
-    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+    with ccf.ProcessPoolExecutor(max_workers=4) as executor:
         for it in range(0, nt):
             anim_file_name = os.path.join(anim_folder, f"{name}_{it:08d}.png")
             t = df.item(it, header[2])
@@ -150,7 +152,7 @@ def plot_single(data, v, sigma, radius):
     logger.info(f"Done")
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, X, Y):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, ent_img):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -159,33 +161,63 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, X
 
     t = df.item(2, 0)
 
-    Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
-
     plt.close("all")
 
-    # Bubble
-    plt.contourf(X, Y, Z, 1000, cmap="viridis")
+    fig, ax = plt.subplots(1, 1, layout="tight")
+    # fig.set_size_inches(10, 10)
 
     # Ship
-    plt.scatter(v * t, 0.0, marker="o", color="black", s=2)
+    ent_x = v * t
+    ent_y = 0.0
+
+    ax.scatter(ent_x, ent_y, marker="o", color="black", s=2)
+
+    ent_width, ent_height = ent_img.size
+    ent_scale = 0.002
+
+    ent_new_width = ent_width * ent_scale
+    ent_new_height = ent_height * ent_scale
+
+    ent_left = ent_x - ent_new_width / 2
+    ent_right = ent_x + ent_new_width / 2
+    ent_bottom = ent_y - ent_new_height / 2
+    ent_top = ent_y + ent_new_height / 2
+
+    ax.imshow(ent_img, extent=(ent_left, ent_right, ent_bottom, ent_top))
 
     # Particles
     for i in range(0, len(df.columns)):
         x = df.item(3, i)
         y = df.item(4, i)
-        plt.scatter(x, y, marker="o", color="tab:red", s=2)
+        ax.scatter(x, y, marker="o", color="tab:red", s=2)
 
-    plt.xlabel(r"$x$")
-    plt.ylabel(r"$y$")
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
 
     title_a = r"$t = "
     title_b = r"$"
-    plt.title(f"{title_a}{t:.2f}{title_b}")
+    ax.set_title(f"{title_a}{t:.2f}{title_b}")
 
-    plt.colorbar()
+    # Bubble
+    inner_radius = plt.Circle(
+        (v * t, 0.0),
+        radius,
+        fill=False,
+        color="black"
+    )
 
-    plt.tight_layout()
-    plt.savefig(anim_file_name, dpi=300)
+    ax.add_patch(inner_radius)
+
+    ax.set_ylim(-2.0 * radius, 2.0 * radius)
+    ax.set_xlim(ent_x - 2.0 * radius, ent_x + 2.0 * radius)
+
+    # adjust Figure aspect ratio to match Axes
+    # fig.draw_without_rendering()
+    # tb = fig.get_tightbbox(fig.canvas.get_renderer())
+    # fig.set_size_inches(tb.width, tb.height)
+
+    # Save figure
+    fig.savefig(anim_file_name, dpi=300)
 
 
 def plot_multiple(prefix, v, sigma, radius):
@@ -199,9 +231,8 @@ def plot_multiple(prefix, v, sigma, radius):
 
     ipc_file_list = os.listdir(prefix)
 
-    x = np.linspace(0.0, 20.0, 100)
-    y = np.linspace(-10, 10.0, 100)
-    X, Y = np.meshgrid(x, y)
+    # Enterprise image
+    ent_img = Image.open("resources/uss_enterprise.jpg")
 
     # for every file
     logger.info(f"Submitting plotting jobs to pool")
@@ -216,8 +247,7 @@ def plot_multiple(prefix, v, sigma, radius):
                 v,
                 sigma,
                 radius,
-                X,
-                Y
+                ent_img
             )
 
         logger.info(f"Waiting for plotting jobs to finish")
