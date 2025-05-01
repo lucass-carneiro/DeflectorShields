@@ -4,4 +4,5 @@ Cargo.lock
 
 *.ipc
 *.mp4
+*.png
 /*.json

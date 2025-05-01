@@ -6,6 +6,7 @@ use crate::types::ParticleType;
 pub struct AffineData {
     pub lambda_max: f64,
     pub dlambda: f64,
+    pub out_every: Option<usize>,
 }
 
 #[derive(Debug, serde::Deserialize)]

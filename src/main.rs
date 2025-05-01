@@ -90,19 +90,29 @@ fn main() {
             let t = (i as f64) * par.affine_data.dlambda;
             log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
 
-            let mut out_file = output::IpcMultiFile::new();
+            if (i % par.affine_data.out_every.unwrap_or(1usize)) == 0 {
+                let mut out_file = output::IpcMultiFile::new();
 
-            for particle_idx in 0..states.len() {
-                out_file.append(particle_idx, i, t, &states[particle_idx]);
+                for particle_idx in 0..states.len() {
+                    out_file.append(particle_idx, i, t, &states[particle_idx]);
 
-                evolve::rk4_step(
-                    par.affine_data.dlambda,
-                    &par.alcubierre_data,
-                    &mut states[particle_idx],
-                );
+                    evolve::rk4_step(
+                        par.affine_data.dlambda,
+                        &par.alcubierre_data,
+                        &mut states[particle_idx],
+                    );
+                }
+
+                out_file.write(&output_file_name, i);
+            } else {
+                for particle_idx in 0..states.len() {
+                    evolve::rk4_step(
+                        par.affine_data.dlambda,
+                        &par.alcubierre_data,
+                        &mut states[particle_idx],
+                    );
+                }
             }
-
-            out_file.write(&output_file_name, i);
         }
     } else {
         log::error!(

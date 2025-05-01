@@ -24,7 +24,6 @@ import numpy as np
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from PIL import Image
 mpl.use("agg")  # This prevents a GUI to lunch on multiple threads
 
@@ -164,7 +163,6 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, e
     plt.close("all")
 
     fig, ax = plt.subplots(1, 1, layout="tight")
-    # fig.set_size_inches(10, 10)
 
     # Ship
     ent_x = v * t
@@ -211,11 +209,6 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, e
     ax.set_ylim(-2.0 * radius, 2.0 * radius)
     ax.set_xlim(ent_x - 2.0 * radius, ent_x + 2.0 * radius)
 
-    # adjust Figure aspect ratio to match Axes
-    # fig.draw_without_rendering()
-    # tb = fig.get_tightbbox(fig.canvas.get_renderer())
-    # fig.set_size_inches(tb.width, tb.height)
-
     # Save figure
     fig.savefig(anim_file_name, dpi=300)
 
@@ -237,20 +230,20 @@ def plot_multiple(prefix, v, sigma, radius):
     # for every file
     logger.info(f"Submitting plotting jobs to pool")
 
-    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
-        for ipc_file in ipc_file_list:
-            executor.submit(
-                plot_multiple_kernel,
-                prefix,
-                ipc_file,
-                anim_folder,
-                v,
-                sigma,
-                radius,
-                ent_img
-            )
+    # with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+    #     for ipc_file in ipc_file_list:
+    #         executor.submit(
+    #             plot_multiple_kernel,
+    #             prefix,
+    #             ipc_file,
+    #             anim_folder,
+    #             v,
+    #             sigma,
+    #             radius,
+    #             ent_img
+    #         )
 
-        logger.info(f"Waiting for plotting jobs to finish")
+    #     logger.info(f"Waiting for plotting jobs to finish")
 
     logger.info(f"Animating frames with ffmpeg")
     subprocess.run([
@@ -258,17 +251,16 @@ def plot_multiple(prefix, v, sigma, radius):
         "-y",
         "-framerate",
         "15",
+        "-pattern_type",
+        "glob",
         "-i",
-        os.path.join(anim_folder, f"{prefix}_%08d.png"),
+        os.path.join(anim_folder, r"*.png"),
         "-c:v",
         "libx264",
         "-crf",
         "0",
         f"{prefix}_anim.mp4"
     ])
-
-    logger.info(f"Removing temporary frames folder")
-    shutil.rmtree(anim_folder)
 
     logger.info(f"Done")
 
