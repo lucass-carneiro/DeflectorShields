@@ -1,6 +1,6 @@
-use crate::alcubierre::AlcubierreData;
 use crate::errors::ParamError;
 use crate::types::ParticleType;
+use crate::warp_drive_alcubierre::WarpDriveAlcubierre;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct AffineData {
@@ -29,8 +29,13 @@ pub enum MultiParticleID {
 }
 
 #[derive(Debug, serde::Deserialize)]
+pub enum WarpDriveSolution {
+    Alcubierre(WarpDriveAlcubierre),
+}
+
+#[derive(Debug, serde::Deserialize)]
 pub struct Params {
-    pub alcubierre_data: AlcubierreData,
+    pub warp_drive_solution: WarpDriveSolution,
     pub normalize_as: ParticleType,
     pub affine_data: AffineData,
     pub single_particle_id: Option<SingleParticleID>,

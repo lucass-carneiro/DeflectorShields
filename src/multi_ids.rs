@@ -1,14 +1,14 @@
-use crate::alcubierre::AlcubierreData;
 use crate::errors::NormalizationError;
 use crate::params::MultiParticleID;
 use crate::types::{ParticleStates, ParticleType};
+use crate::warp_drive_hamiltonian::WarpDriveHamiltonian;
 
 fn make_static_wall(
     position: f64,
     extent: f64,
     num: u64,
     particle_type: &ParticleType,
-    alcubierre_data: &AlcubierreData,
+    warp_drive_ham: &Box<dyn WarpDriveHamiltonian>,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     let mut states: ParticleStates<f64> = Vec::new();
 
@@ -17,7 +17,8 @@ fn make_static_wall(
 
     for i in 0..num {
         let y = -abs_extent + (i as f64) * dy;
-        let state = alcubierre_data.make_normalized_state(
+        let state = warp_drive_ham.make_normalized_state(
+            0.0,
             position,
             y,
             0.0,
@@ -35,13 +36,13 @@ fn make_static_wall(
 pub fn make_multi_id(
     id: MultiParticleID,
     particle_type: &ParticleType,
-    alcubierre_data: &AlcubierreData,
+    warp_drive_ham: &Box<dyn WarpDriveHamiltonian>,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     match id {
         MultiParticleID::StaticWall {
             position,
             extent,
             num,
-        } => make_static_wall(position, extent, num, particle_type, alcubierre_data),
+        } => make_static_wall(position, extent, num, particle_type, warp_drive_ham),
     }
 }

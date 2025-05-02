@@ -230,20 +230,20 @@ def plot_multiple(prefix, v, sigma, radius):
     # for every file
     logger.info(f"Submitting plotting jobs to pool")
 
-    # with ccf.ProcessPoolExecutor(max_workers=8) as executor:
-    #     for ipc_file in ipc_file_list:
-    #         executor.submit(
-    #             plot_multiple_kernel,
-    #             prefix,
-    #             ipc_file,
-    #             anim_folder,
-    #             v,
-    #             sigma,
-    #             radius,
-    #             ent_img
-    #         )
+    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+        for ipc_file in ipc_file_list:
+            executor.submit(
+                plot_multiple_kernel,
+                prefix,
+                ipc_file,
+                anim_folder,
+                v,
+                sigma,
+                radius,
+                ent_img
+            )
 
-    #     logger.info(f"Waiting for plotting jobs to finish")
+        logger.info(f"Waiting for plotting jobs to finish")
 
     logger.info(f"Animating frames with ffmpeg")
     subprocess.run([
@@ -277,9 +277,9 @@ def main(args):
 
         plot_single(
             single_particle_data,
-            single_particle_par_file["alcubierre_data"]["v"],
-            single_particle_par_file["alcubierre_data"]["sigma"],
-            single_particle_par_file["alcubierre_data"]["radius"]
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["v"],
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["sigma"],
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["radius"]
         )
     elif args["multiple"]:
         parameter_file = args["<parameter-file>"]
@@ -289,9 +289,9 @@ def main(args):
 
         plot_multiple(
             output_file_prefix,
-            single_particle_par_file["alcubierre_data"]["v"],
-            single_particle_par_file["alcubierre_data"]["sigma"],
-            single_particle_par_file["alcubierre_data"]["radius"]
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["v"],
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["sigma"],
+            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["radius"]
         )
 
 
