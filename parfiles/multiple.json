@@ -1,8 +1,10 @@
 {
-    "alcubierre_data": {
-        "v": 0.5,
-        "sigma": 1.0,
-        "radius": 1.0
+    "warp_drive_solution": {
+        "Alcubierre": {
+            "v": 0.5,
+            "sigma": 16.0,
+            "radius": 4.0
+        }
     },
     "normalize_as": "Massive",
     "affine_data": {
