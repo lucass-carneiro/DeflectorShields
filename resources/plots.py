@@ -277,9 +277,9 @@ def main(args):
 
         plot_single(
             single_particle_data,
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["v"],
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["sigma"],
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["radius"]
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["v"],
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["sigma"],
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["radius"]
         )
     elif args["multiple"]:
         parameter_file = args["<parameter-file>"]
@@ -289,9 +289,9 @@ def main(args):
 
         plot_multiple(
             output_file_prefix,
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["v"],
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["sigma"],
-            single_particle_par_file["warp_drive_solution"]["Alcubierre"]["radius"]
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["v"],
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["sigma"],
+            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["radius"]
         )
 
 

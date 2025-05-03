@@ -6,8 +6,10 @@ mod multi_ids;
 mod output;
 mod params;
 mod types;
-mod warp_drive_alcubierre;
 mod warp_drive_hamiltonian;
+
+mod warp_drive_alcubierre;
+mod warp_drive_alcubierre_sharp;
 
 use warp_drive_hamiltonian::WarpDriveHamiltonian;
 
@@ -36,6 +38,7 @@ fn single_particle_mode(output_file_name: &str, par: params::Params) {
 
     let warp_drive_solution: Box<dyn WarpDriveHamiltonian> = match par.warp_drive_solution {
         params::WarpDriveSolution::Alcubierre(sol) => Box::new(sol),
+        params::WarpDriveSolution::AlcubierreSharp(sol) => Box::new(sol),
     };
 
     let mut state = warp_drive_solution
@@ -76,6 +79,7 @@ fn multi_particle_mode(output_file_name: &str, par: params::Params) {
 
     let warp_drive_solution: Box<dyn WarpDriveHamiltonian> = match par.warp_drive_solution {
         params::WarpDriveSolution::Alcubierre(sol) => Box::new(sol),
+        params::WarpDriveSolution::AlcubierreSharp(sol) => Box::new(sol),
     };
 
     let mut states = multi_ids::make_multi_id(id, &par.normalize_as, &warp_drive_solution).unwrap();
