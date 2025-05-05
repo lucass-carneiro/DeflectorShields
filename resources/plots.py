@@ -2,7 +2,7 @@
 
 Usage:
   plots.py single <parameter-file> <data-file>
-  plots.py multiple <parameter-file> <data-file-prefix>
+  plots.py multiple <parameter-file> <data-file-folder>
   plots.py (-h | --help)
   plots.py --version
 
@@ -151,7 +151,7 @@ def plot_single(data, v, sigma, radius):
     logger.info(f"Done")
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, ent_img):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius_y, sigma_x, sigma_y, ent_img):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -196,25 +196,66 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, sigma, radius, e
     title_b = r"$"
     ax.set_title(f"{title_a}{t:.2f}{title_b}")
 
-    # Bubble
-    inner_radius = plt.Circle(
+    # Radii
+    warp_bubble_start = plt.Circle(
         (v * t, 0.0),
-        radius,
+        radius_x,
         fill=False,
         color="black"
     )
 
-    ax.add_patch(inner_radius)
+    warp_bubble_end = plt.Circle(
+        (v * t, 0.0),
+        sigma_x,
+        fill=False,
+        color="black",
+        linestyle="--"
+    )
 
-    ax.set_ylim(-2.0 * radius, 2.0 * radius)
-    ax.set_xlim(ent_x - 2.0 * radius, ent_x + 2.0 * radius)
+    shield_start = plt.Circle(
+        (v * t, 0.0),
+        radius_y,
+        fill=False,
+        color="tab:blue"
+    )
+
+    shield_end = plt.Circle(
+        (v * t, 0.0),
+        sigma_y,
+        fill=False,
+        color="tab:blue",
+        linestyle="--"
+    )
+
+    ax.add_patch(warp_bubble_start)
+    ax.add_patch(warp_bubble_end)
+
+    ax.add_patch(shield_start)
+    ax.add_patch(shield_end)
+
+    # Ranges
+    ax.set_ylim(-2.0 * sigma_y, 2.0 * sigma_y)
+    ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
 
     # Save figure
     fig.savefig(anim_file_name, dpi=300)
 
 
-def plot_multiple(prefix, v, sigma, radius):
+def plot_multiple(prefix, parameters):
     logger.info("Plotting multiple particle data")
+
+    if "AlcubierreSharp" in parameters["warp_drive_solution"]:
+        v = parameters["warp_drive_solution"]["AlcubierreSharp"]["v"]
+
+        radius_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["radius"]
+        sigma_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["sigma"]
+
+        radius_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["radius"]
+        sigma_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["sigma"]
+    else:
+        raise RuntimeError(
+            f"Parameter retrival no implemented for this warp drive"
+        )
 
     anim_folder = f"{prefix}_anim"
 
@@ -238,8 +279,10 @@ def plot_multiple(prefix, v, sigma, radius):
                 ipc_file,
                 anim_folder,
                 v,
-                sigma,
-                radius,
+                radius_x,
+                radius_y,
+                sigma_x,
+                sigma_y,
                 ent_img
             )
 
@@ -283,15 +326,13 @@ def main(args):
         )
     elif args["multiple"]:
         parameter_file = args["<parameter-file>"]
-        output_file_prefix = args["<data-file-prefix>"]
+        output_file_prefix = args["<data-file-folder>"]
 
-        single_particle_par_file = read_parameter_file(parameter_file)
+        parameters = read_parameter_file(parameter_file)
 
         plot_multiple(
             output_file_prefix,
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["v"],
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["sigma"],
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["radius"]
+            parameters
         )
 
 
