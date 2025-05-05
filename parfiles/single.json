@@ -1,22 +1,29 @@
 {
     "warp_drive_solution": {
-        "Alcubierre": {
+        "AlcubierreSharp": {
             "v": 0.5,
-            "sigma": 16.0,
-            "radius": 4.0
+            "k": 0.1,
+            "radii_x": {
+                "radius": 4.0,
+                "sigma": 8.0
+            },
+            "radii_y": {
+                "radius": 4.0,
+                "sigma": 8.5
+            }
         }
     },
     "normalize_as": "Massive",
     "affine_data": {
-        "lambda_max": 10.0,
-        "dlambda": 0.1
+        "lambda_max": 100.0,
+        "dlambda": 0.1,
+        "out_every": 5
     },
-    "single_particle_id": {
-        "x0": 2.5,
-        "y0": 0.0,
-        "z0": 0.0,
-        "px0": 0.0,
-        "py0": 0.0,
-        "pz0": 0.0
+    "multi_particle_id": {
+        "StaticWall": {
+            "position": 20.0,
+            "extent": 20.0,
+            "num": 200
+        }
     }
 }
