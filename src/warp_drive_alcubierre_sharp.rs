@@ -34,8 +34,8 @@ impl WarpDriveAlcubierreSharp {
         if radius < rr && rr < sigma {
             1.0 / (1.0
                 + f64::exp(
-                    ((radius - sigma) * (radius - 2.0 * rr + sigma))
-                        / ((radius - rr) * (rr - sigma)),
+                    ((radii.radius - radii.sigma) * (radii.radius - 2.0 * rr + radii.sigma))
+                        / ((radii.radius - rr) * (rr - radii.sigma)),
                 ))
         } else if radius < rr {
             0.0
@@ -84,27 +84,25 @@ impl WarpDriveAlcubierreSharp {
 
     pub fn d_f_dr(&self, radii: &WarpDriveAlcubierreSharpRadii, q: &nalgebra::Vector4<f64>) -> f64 {
         let rr = self.r(q);
-        let radius = radii.radius;
-        let sigma = radii.sigma;
 
-        if radius < rr && rr < sigma {
-            let radius_minus_sigma = radius - sigma;
-            let radius_minus_rr = radius - rr;
-            let rr_minus_sigma = rr - sigma;
-            let sech_term = 1.0
-                / f64::cosh(
-                    (radius_minus_sigma * (radius - 2.0 * rr + sigma))
-                        / (2.0 * radius_minus_rr * rr_minus_sigma),
-                );
-            let radius_term = radius * radius - 2.0 * radius * rr + 2.0 * rr * rr
-                - 2.0 * rr * sigma
-                + sigma * sigma;
-            (radius_minus_sigma * radius_term * sech_term * sech_term)
-                / (4.0
-                    * radius_minus_rr
-                    * radius_minus_rr
-                    * radius_minus_sigma
-                    * radius_minus_sigma)
+        if radii.radius < rr && rr < radii.sigma {
+            (f64::exp(
+                ((radii.radius - radii.sigma) * (radii.radius + radii.sigma))
+                    / ((radii.radius - rr) * (rr - radii.sigma)),
+            ) * (radii.radius - radii.sigma)
+                * (radii.radius * radii.radius - 2.0 * radii.radius * rr + 2.0 * (rr * rr)
+                    - 2.0 * rr * radii.sigma
+                    + radii.sigma * radii.sigma))
+                / ((f64::exp(
+                    radii.radius / (rr - radii.sigma) + radii.sigma / (radii.radius - rr),
+                ) + f64::exp(
+                    radii.radius / (radii.radius - rr) + radii.sigma / (rr - radii.sigma),
+                )) * (f64::exp(
+                    radii.radius / (rr - radii.sigma) + radii.sigma / (radii.radius - rr),
+                ) + f64::exp(
+                    radii.radius / (radii.radius - rr) + radii.sigma / (rr - radii.sigma),
+                )) * ((radii.radius - rr) * (radii.radius - rr))
+                    * ((rr - radii.sigma) * (rr - radii.sigma)))
         } else {
             0.0
         }
