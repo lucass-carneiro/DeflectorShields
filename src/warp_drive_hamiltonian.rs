@@ -51,7 +51,8 @@ pub trait WarpDriveHamiltonian {
             - (-1.0 + lvy * lvy) * py * py
             - 2.0 * lvy * lvz * py * pz
             + pz * pz
-            - lvz * lvz * pz * pz * -2.0 * lvx * px * (lvy * py + lvz * pz)
+            - lvz * lvz * pz * pz
+            - 2.0 * lvx * px * (lvy * py + lvz * pz)
             - delta)
             / 2.0;
         let discriminant = b * b - 4.0 * a * c;
