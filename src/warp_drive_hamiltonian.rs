@@ -46,21 +46,18 @@ pub trait WarpDriveHamiltonian {
         };
 
         let a = -0.5;
-        let b = -(lvx * px + lvy * py + lvz * pz);
-        let c = (-((-1.0 + lvx * lvx) * px * px)
-            - (-1.0 + lvy * lvy) * py * py
-            - 2.0 * lvy * lvz * py * pz
-            + pz * pz
-            - lvz * lvz * pz * pz
-            - 2.0 * lvx * px * (lvy * py + lvz * pz)
+        let b = -(lvx * px) - lvy * py - lvz * pz;
+        let c = (px * px + py * py + pz * pz
+            - (lvx * px + lvy * py + lvz * pz) * (lvx * px + lvy * py + lvz * pz)
             - delta)
-            / 2.0;
+            / 2.;
+
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant < 0.0 {
             Err(NormalizationError {
                 particle_type: *particle_type,
-                t: 0.0,
+                t,
                 x,
                 y,
                 z,
@@ -72,7 +69,7 @@ pub trait WarpDriveHamiltonian {
             let pt = (-b + f64::sqrt(discriminant)) / (2.0 * a);
 
             Ok(ParticleState::from_column_slice(&[
-                0.0, x, y, z, pt, px, py, pz,
+                t, x, y, z, pt, px, py, pz,
             ]))
         }
     }
