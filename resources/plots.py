@@ -206,7 +206,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
 
     warp_bubble_end = plt.Circle(
         (v * t, 0.0),
-        sigma_x,
+        radius_x + sigma_x,
         fill=False,
         color="black",
         linestyle="--"
@@ -221,7 +221,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
 
     shield_end = plt.Circle(
         (v * t, 0.0),
-        sigma_y,
+        radius_y + sigma_y,
         fill=False,
         color="tab:blue",
         linestyle="--"
