@@ -165,8 +165,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     fig, ax = plt.subplots(1, 1, layout="tight")
 
     # Ship
-    ent_x = v * t
-    ent_y = 0.0
+    ent_x = df.item(3, -1)
+    ent_y = df.item(4, -1)
 
     ax.scatter(ent_x, ent_y, marker="o", color="black", s=2)
 
@@ -184,7 +184,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     ax.imshow(ent_img, extent=(ent_left, ent_right, ent_bottom, ent_top))
 
     # Particles
-    for i in range(0, len(df.columns)):
+    for i in range(0, len(df.columns) - 1):
         x = df.item(3, i)
         y = df.item(4, i)
         ax.scatter(x, y, marker="o", color="tab:red", s=2)
@@ -198,14 +198,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
 
     # Radii
     warp_bubble_start = plt.Circle(
-        (v * t, 0.0),
+        (ent_x, ent_y),
         radius_x,
         fill=False,
         color="black"
     )
 
     warp_bubble_end = plt.Circle(
-        (v * t, 0.0),
+        (ent_x, ent_y),
         radius_x + sigma_x,
         fill=False,
         color="black",
@@ -213,14 +213,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     )
 
     shield_start = plt.Circle(
-        (v * t, 0.0),
+        (ent_x, ent_y),
         radius_y,
         fill=False,
         color="tab:blue"
     )
 
     shield_end = plt.Circle(
-        (v * t, 0.0),
+        (ent_x, ent_y),
         radius_y + sigma_y,
         fill=False,
         color="tab:blue",

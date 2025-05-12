@@ -77,22 +77,43 @@ fn multi_particle_mode(output_file_name: &str, par: params::Params) {
 
     let id = par.multi_particle_id.unwrap();
 
+    // Get warp drive object
     let warp_drive_solution: Box<dyn WarpDriveHamiltonian> = match par.warp_drive_solution {
         params::WarpDriveSolution::Alcubierre(sol) => Box::new(sol),
         params::WarpDriveSolution::AlcubierreSharp(sol) => Box::new(sol),
     };
 
+    // Initialize particle state vectors
     let mut states = multi_ids::make_multi_id(id, &par.normalize_as, &warp_drive_solution).unwrap();
 
+    // Add the ship as the last particle. TODO: Set the ship speed based on parameters
+    let ship = warp_drive_solution
+        .make_normalized_state(
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            &types::ParticleType::Massive,
+        )
+        .unwrap();
+    states.push(ship);
+
+    // Compute the number of time steps
     let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as usize;
 
+    // Time stepping loop
     for i in 0..=nlambda {
         let t = (i as f64) * par.affine_data.dlambda;
         log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
 
+        // Do output
         if (i % par.affine_data.out_every.unwrap_or(1usize)) == 0 {
             let mut out_file = output::IpcMultiFile::new();
 
+            // Loop over particles
             for particle_idx in 0..states.len() {
                 out_file.append(particle_idx, i, t, &states[particle_idx]);
 
@@ -105,6 +126,7 @@ fn multi_particle_mode(output_file_name: &str, par: params::Params) {
 
             out_file.write(&output_file_name, i);
         } else {
+            // Loop over particles
             for particle_idx in 0..states.len() {
                 evolve::rk4_step(
                     par.affine_data.dlambda,
