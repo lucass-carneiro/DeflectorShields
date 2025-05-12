@@ -8,8 +8,10 @@ pub struct WarpDriveAlcubierreSharpRadii {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct WarpDriveAlcubierreSharp {
+    u: f64,
     v: f64,
     k: f64,
+    epsilon: f64,
     radii_x: WarpDriveAlcubierreSharpRadii,
     radii_y: WarpDriveAlcubierreSharpRadii,
 }
@@ -17,12 +19,12 @@ pub struct WarpDriveAlcubierreSharp {
 impl WarpDriveAlcubierreSharp {
     pub fn r(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        f64::sqrt((-(t * self.v) + x) * (-(t * self.v) + x) + y * y + z * z)
+        f64::sqrt(self.epsilon + (-(t * self.u) + x) * (-(t * self.u) + x) + y * y + z * z)
     }
 
     pub fn rho(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (&q[2], &q[3]);
-        y / f64::sqrt(y * y + z * z)
+        y / f64::sqrt(self.epsilon + y * y + z * z)
     }
 
     pub fn f(&self, radii: &WarpDriveAlcubierreSharpRadii, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -43,33 +45,35 @@ impl WarpDriveAlcubierreSharp {
 
     pub fn d_r_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        (self.v * (t * self.v - x))
-            / f64::sqrt((-(t * self.v) + x) * (-(t * self.v) + x) + y * y + z * z)
+        (self.u * (t * self.u - x))
+            / f64::sqrt(self.epsilon + (-(t * self.u) + x) * (-(t * self.u) + x) + y * y + z * z)
     }
 
     pub fn d_r_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        (-(t * self.v) + x) / f64::sqrt((-(t * self.v) + x) * (-(t * self.v) + x) + y * y + z * z)
+        (-(t * self.u) + x)
+            / f64::sqrt(self.epsilon + (-(t * self.u) + x) * (-(t * self.u) + x) + y * y + z * z)
     }
 
     pub fn d_r_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        y / f64::sqrt((-(t * self.v) + x) * (-(t * self.v) + x) + y * y + z * z)
+        y / f64::sqrt(self.epsilon + (-(t * self.u) + x) * (-(t * self.u) + x) + y * y + z * z)
     }
 
     pub fn d_r_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        z / f64::sqrt((-(t * self.v) + x) * (-(t * self.v) + x) + y * y + z * z)
+        z / f64::sqrt(self.epsilon + (-(t * self.u) + x) * (-(t * self.u) + x) + y * y + z * z)
     }
 
     pub fn d_rho_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (&q[2], &q[3]);
-        (z * z) / ((y * y + z * z) * f64::sqrt(y * y + z * z))
+        (self.epsilon + z * z)
+            / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z))
     }
 
     pub fn d_rho_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (&q[2], &q[3]);
-        -((y * z) / ((y * y + z * z) * f64::sqrt(y * y + z * z)))
+        -((y * z) / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z)))
     }
 
     pub fn d_f_dr(&self, radii: &WarpDriveAlcubierreSharpRadii, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -105,8 +109,12 @@ impl WarpDriveAlcubierreSharp {
 }
 
 impl WarpDriveHamiltonian for WarpDriveAlcubierreSharp {
+    fn ship_speed(&self) -> f64 {
+        self.u
+    }
+
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.v * self.f(&self.radii_x, &q)
+        (self.u - self.v) * self.f(&self.radii_x, &q)
     }
 
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -119,19 +127,19 @@ impl WarpDriveHamiltonian for WarpDriveAlcubierreSharp {
 
     // Vx Derivatives
     fn d_vx_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.v * self.d_f_dr(&self.radii_x, &q) * self.d_r_dt(&q)
+        (self.u - self.v) * self.d_f_dr(&self.radii_x, &q) * self.d_r_dt(&q)
     }
 
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.v * self.d_f_dr(&self.radii_x, &q) * self.d_r_dx(&q)
+        (self.u - self.v) * self.d_f_dr(&self.radii_x, &q) * self.d_r_dx(&q)
     }
 
     fn d_vx_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.v * self.d_f_dr(&self.radii_x, &q) * self.d_r_dy(&q)
+        (self.u - self.v) * self.d_f_dr(&self.radii_x, &q) * self.d_r_dy(&q)
     }
 
     fn d_vx_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.v * self.d_f_dr(&self.radii_x, &q) * self.d_r_dz(&q)
+        (self.u - self.v) * self.d_f_dr(&self.radii_x, &q) * self.d_r_dz(&q)
     }
 
     // Vy Derivatives
