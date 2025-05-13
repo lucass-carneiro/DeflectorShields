@@ -151,23 +151,25 @@ def plot_single(data, v, sigma, radius):
     logger.info(f"Done")
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius_y, sigma_x, sigma_y, ent_img):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius_y, sigma_x, sigma_y, ent_img):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
     it = int(df.item(0, 0))
     anim_file_name = os.path.join(anim_folder, f"{prefix}_{it:08d}.png")
 
+    # Current time
     t = df.item(2, 0)
+
+    # Ship position
+    ent_x = df.item(3, -1)
+    ent_y = df.item(4, -1)
 
     plt.close("all")
 
     fig, ax = plt.subplots(1, 1, layout="tight")
 
     # Ship
-    ent_x = df.item(3, -1)
-    ent_y = df.item(4, -1)
-
     ax.scatter(ent_x, ent_y, marker="o", color="black", s=2)
 
     ent_width, ent_height = ent_img.size
@@ -198,14 +200,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
 
     # Radii
     warp_bubble_start = plt.Circle(
-        (ent_x, ent_y),
+        (u * t, 0.0),
         radius_x,
         fill=False,
         color="black"
     )
 
     warp_bubble_end = plt.Circle(
-        (ent_x, ent_y),
+        (u * t, 0.0),
         radius_x + sigma_x,
         fill=False,
         color="black",
@@ -213,14 +215,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     )
 
     shield_start = plt.Circle(
-        (ent_x, ent_y),
+        (u * t, 0.0),
         radius_y,
         fill=False,
         color="tab:blue"
     )
 
     shield_end = plt.Circle(
-        (ent_x, ent_y),
+        (u * t, 0.0),
         radius_y + sigma_y,
         fill=False,
         color="tab:blue",
@@ -245,7 +247,7 @@ def plot_multiple(prefix, parameters):
     logger.info("Plotting multiple particle data")
 
     if "AlcubierreSharp" in parameters["warp_drive_solution"]:
-        v = parameters["warp_drive_solution"]["AlcubierreSharp"]["v"]
+        u = parameters["warp_drive_solution"]["AlcubierreSharp"]["u"]
 
         radius_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["radius"]
         sigma_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["sigma"]
@@ -278,7 +280,7 @@ def plot_multiple(prefix, parameters):
                 prefix,
                 ipc_file,
                 anim_folder,
-                v,
+                u,
                 radius_x,
                 radius_y,
                 sigma_x,
