@@ -93,7 +93,7 @@ fn multi_particle_mode(output_file_name: &str, par: params::Params) {
             0.0,
             0.0,
             0.0,
-            0.0,
+            warp_drive_solution.ship_speed(),
             0.0,
             0.0,
             &types::ParticleType::Massive,

@@ -110,7 +110,7 @@ impl WarpDriveAlcubierreSharp {
 
 impl WarpDriveHamiltonian for WarpDriveAlcubierreSharp {
     fn ship_speed(&self) -> f64 {
-        self.u
+        self.v
     }
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
