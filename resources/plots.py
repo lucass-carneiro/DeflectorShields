@@ -1,8 +1,7 @@
 """Deflector Shield Plotter.
 
 Usage:
-  plots.py single <parameter-file> <data-file>
-  plots.py multiple <parameter-file> <data-file-folder>
+  plots.py <parameter-file> <data-file-folder>
   plots.py (-h | --help)
   plots.py --version
 
@@ -64,93 +63,6 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
-def plot_single_kernel(anim_file_name, v, t, x, y, X, Y, Z):
-    plt.close("all")
-
-    # Bubble
-    plt.contourf(X, Y, Z, 1000, cmap="viridis")
-
-    # Particle
-    plt.scatter(x, y, marker="o", color="tab:red", s=2)
-
-    # Ship
-    plt.scatter(v * t, 0.0, marker="o", color="black", s=2)
-
-    plt.xlabel(r"$x$")
-    plt.ylabel(r"$y$")
-
-    title_a = r"$t = "
-    title_b = r"$"
-    plt.title(f"{title_a}{t:.2f}{title_b}")
-
-    plt.colorbar()
-
-    plt.tight_layout()
-    plt.savefig(anim_file_name, dpi=300)
-
-
-def plot_single(data, v, sigma, radius):
-    logger.info("Plotting single particle data")
-
-    name, header, df = data
-
-    anim_folder = f"{name}_anim"
-    if not os.path.exists(anim_folder):
-        logger.info(f"Creating temporary frames folder")
-
-        os.mkdir(anim_folder)
-
-    xy = np.linspace(-10.0, 10.0, 100)
-    X, Y = np.meshgrid(xy, xy)
-
-    nt = len(df)
-
-    logger.info(f"Submitting plotting jobs to pool")
-
-    with ccf.ProcessPoolExecutor(max_workers=4) as executor:
-        for it in range(0, nt):
-            anim_file_name = os.path.join(anim_folder, f"{name}_{it:08d}.png")
-            t = df.item(it, header[2])
-            x = df.item(it, header[3])
-            y = df.item(it, header[4])
-
-            Z = alcubierre_f(v, sigma, radius, t, X, Y, 0.0)
-
-            executor.submit(
-                plot_single_kernel,
-                anim_file_name,
-                v,
-                t,
-                x,
-                y,
-                X,
-                Y,
-                Z
-            )
-
-        logger.info(f"Waiting for plotting jobs to finish")
-
-    logger.info(f"Animating frames with ffmpeg")
-    subprocess.run([
-        "ffmpeg",
-        "-y",
-        "-framerate",
-        "15",
-        "-i",
-        os.path.join(anim_folder, f"{name}_%08d.png"),
-        "-c:v",
-        "libx264",
-        "-crf",
-        "0",
-        f"{name}_anim.mp4"
-    ])
-
-    logger.info(f"Removing temporary frames folder")
-    shutil.rmtree(anim_folder)
-
-    logger.info(f"Done")
-
-
 def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius_y, sigma_x, sigma_y, ent_img):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
@@ -170,7 +82,10 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
     fig, ax = plt.subplots(1, 1, layout="tight")
 
     # Ship
-    ax.scatter(ent_x, ent_y, marker="o", color="black", s=2)
+    ax.scatter(ent_x, ent_y, marker="*", color="tab:blue", s=2)
+
+    # Bubble center
+    ax.scatter(u * t, 0.0, marker="o", color="black", s=2)
 
     ent_width, ent_height = ent_img.size
     ent_scale = 0.002
@@ -313,29 +228,15 @@ def plot_multiple(prefix, parameters):
 def main(args):
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    if args["single"]:
-        parameter_file = args["<parameter-file>"]
-        output_file = args["<data-file>"]
+    parameter_file = args["<parameter-file>"]
+    output_file_prefix = args["<data-file-folder>"]
 
-        single_particle_par_file = read_parameter_file(parameter_file)
-        single_particle_data = read_ipc(output_file)
+    parameters = read_parameter_file(parameter_file)
 
-        plot_single(
-            single_particle_data,
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["v"],
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["sigma"],
-            single_particle_par_file["warp_drive_solution"]["AlcubierreSharp"]["radius"]
-        )
-    elif args["multiple"]:
-        parameter_file = args["<parameter-file>"]
-        output_file_prefix = args["<data-file-folder>"]
-
-        parameters = read_parameter_file(parameter_file)
-
-        plot_multiple(
-            output_file_prefix,
-            parameters
-        )
+    plot_multiple(
+        output_file_prefix,
+        parameters
+    )
 
 
 if __name__ == '__main__':
