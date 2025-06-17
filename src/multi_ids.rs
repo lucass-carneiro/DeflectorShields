@@ -15,6 +15,7 @@ fn make_static_wall(
     let abs_extent = f64::abs(extent);
     let dy = (2.0 * abs_extent) / ((num - 1) as f64);
 
+    // Particles
     for i in 0..num {
         let y = -abs_extent + (i as f64) * dy;
         let state = warp_drive_ham.make_normalized_state(
@@ -38,11 +39,29 @@ pub fn make_multi_id(
     particle_type: &ParticleType,
     warp_drive_ham: &Box<dyn WarpDriveHamiltonian>,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
-    match id {
+    // Particles
+    let mut states = match id {
         MultiParticleID::StaticWall {
             position,
             extent,
             num,
         } => make_static_wall(position, extent, num, particle_type, warp_drive_ham),
-    }
+    }?;
+
+    // Ship
+    let ship = warp_drive_ham
+        .make_normalized_state(
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            warp_drive_ham.ship_speed(),
+            0.0,
+            0.0,
+            particle_type,
+        )
+        .unwrap();
+    states.push(ship);
+
+    return Ok(states);
 }
