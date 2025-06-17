@@ -12,16 +12,6 @@ pub struct AffineData {
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub struct SingleParticleID {
-    pub x0: f64,
-    pub y0: f64,
-    pub z0: f64,
-    pub px0: f64,
-    pub py0: f64,
-    pub pz0: f64,
-}
-
-#[derive(Debug, serde::Deserialize)]
 pub enum MultiParticleID {
     StaticWall {
         position: f64,
@@ -41,8 +31,7 @@ pub struct Params {
     pub warp_drive_solution: WarpDriveSolution,
     pub normalize_as: ParticleType,
     pub affine_data: AffineData,
-    pub single_particle_id: Option<SingleParticleID>,
-    pub multi_particle_id: Option<MultiParticleID>,
+    pub multi_particle_id: MultiParticleID,
 }
 
 pub fn read_params(file_name: &str) -> Result<Params, ParamError> {

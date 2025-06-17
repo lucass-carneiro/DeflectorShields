@@ -1,8 +1,10 @@
 {
     "warp_drive_solution": {
         "AlcubierreSharp": {
-            "v": 0.5,
-            "k": 0.0,
+            "u": 0.5,
+            "v": 0.0,
+            "k": 0.1,
+            "epsilon": 1.0e-6,
             "radii_x": {
                 "radius": 4.0,
                 "sigma": 4.0
@@ -15,9 +17,9 @@
     },
     "normalize_as": "Massive",
     "affine_data": {
-        "lambda_max": 100.0,
+        "lambda_max": 150.0,
         "dlambda": 0.1,
-        "out_every": 5
+        "out_every": 10
     },
     "multi_particle_id": {
         "StaticWall": {
