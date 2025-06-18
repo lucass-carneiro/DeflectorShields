@@ -18,6 +18,12 @@ pub enum MultiParticleID {
         extent: f64,
         num: u64,
     },
+    StaticDebrisField {
+        start: f64,
+        width: f64,
+        height: f64,
+        num: u64,
+    },
 }
 
 #[derive(Debug, serde::Deserialize)]
