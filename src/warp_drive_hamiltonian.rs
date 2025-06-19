@@ -3,8 +3,6 @@ use crate::types::ParticleState;
 use crate::types::ParticleType;
 
 pub trait WarpDriveHamiltonian {
-    fn ship_speed(&self) -> f64;
-
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64;

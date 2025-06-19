@@ -62,10 +62,6 @@ impl WarpDriveAlcubierre {
 }
 
 impl WarpDriveHamiltonian for WarpDriveAlcubierre {
-    fn ship_speed(&self) -> f64 {
-        self.v
-    }
-
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         self.v * self.f(&q)
     }
@@ -79,19 +75,19 @@ impl WarpDriveHamiltonian for WarpDriveAlcubierre {
     }
 
     fn d_vx_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.d_f_dr(&q) * self.d_r_dt(&q)
+        self.v * self.d_f_dr(&q) * self.d_r_dt(&q)
     }
 
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.d_f_dr(&q) * self.d_r_dx(&q)
+        self.v * self.d_f_dr(&q) * self.d_r_dx(&q)
     }
 
     fn d_vx_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.d_f_dr(&q) * self.d_r_dy(&q)
+        self.v * self.d_f_dr(&q) * self.d_r_dy(&q)
     }
 
     fn d_vx_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        self.d_f_dr(&q) * self.d_r_dz(&q)
+        self.v * self.d_f_dr(&q) * self.d_r_dz(&q)
     }
 
     fn d_vy_dt(&self, _: &nalgebra::Vector4<f64>) -> f64 {
