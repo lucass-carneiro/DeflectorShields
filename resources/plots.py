@@ -15,7 +15,6 @@ from docopt import docopt
 import os
 import sys
 import subprocess
-import shutil
 import json
 import concurrent.futures as ccf
 import polars as pl
@@ -63,7 +62,7 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius_y, sigma_x, sigma_y, ent_img):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius_y, sigma_x, sigma_y, ent_img):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -77,6 +76,10 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
     ent_x = df.item(3, -1)
     ent_y = df.item(4, -1)
 
+    # Bubble position
+    bubble_x = v * t
+    bubble_y = 0.0
+
     plt.close("all")
 
     fig, ax = plt.subplots(1, 1, layout="tight")
@@ -85,7 +88,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
     ax.scatter(ent_x, ent_y, marker="*", color="tab:blue", s=2)
 
     # Bubble center
-    ax.scatter(u * t, 0.0, marker="o", color="black", s=2)
+    ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
 
     ent_width, ent_height = ent_img.size
     ent_scale = 0.002
@@ -115,14 +118,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
 
     # Radii
     warp_bubble_start = plt.Circle(
-        (u * t, 0.0),
+        (bubble_x, bubble_y),
         radius_x,
         fill=False,
         color="black"
     )
 
     warp_bubble_end = plt.Circle(
-        (u * t, 0.0),
+        (bubble_x, bubble_y),
         radius_x + sigma_x,
         fill=False,
         color="black",
@@ -130,14 +133,14 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
     )
 
     shield_start = plt.Circle(
-        (u * t, 0.0),
+        (bubble_x, bubble_y),
         radius_y,
         fill=False,
         color="tab:blue"
     )
 
     shield_end = plt.Circle(
-        (u * t, 0.0),
+        (bubble_x, bubble_y),
         radius_y + sigma_y,
         fill=False,
         color="tab:blue",
@@ -152,7 +155,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, u, radius_x, radius
 
     # Ranges
     ax.set_ylim(-2.0 * sigma_y, 2.0 * sigma_y)
-    ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
+    # ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
+    ax.set_xlim(bubble_x - 2.0 * sigma_y, bubble_x + 2.0 * sigma_y)
 
     # Save figure
     fig.savefig(anim_file_name, dpi=300)
@@ -162,7 +166,7 @@ def plot_multiple(prefix, parameters):
     logger.info("Plotting multiple particle data")
 
     if "AlcubierreSharp" in parameters["warp_drive_solution"]:
-        u = parameters["warp_drive_solution"]["AlcubierreSharp"]["u"]
+        v = parameters["warp_drive_solution"]["AlcubierreSharp"]["v"]
 
         radius_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["radius"]
         sigma_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["sigma"]
@@ -195,7 +199,7 @@ def plot_multiple(prefix, parameters):
                 prefix,
                 ipc_file,
                 anim_folder,
-                u,
+                v,
                 radius_x,
                 radius_y,
                 sigma_x,

@@ -57,6 +57,7 @@ fn main() {
     let mut states = multi_ids::make_multi_id(
         par.multi_particle_id,
         &par.normalize_as,
+        par.ship_speed,
         &warp_drive_solution,
     )
     .unwrap();

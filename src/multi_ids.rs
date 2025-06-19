@@ -80,6 +80,7 @@ fn make_static_debris_field(
 pub fn make_multi_id(
     id: MultiParticleID,
     particle_type: &ParticleType,
+    ship_speed: f64,
     warp_drive_ham: &Box<dyn WarpDriveHamiltonian>,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     // Particles
@@ -105,10 +106,10 @@ pub fn make_multi_id(
             0.0,
             0.0,
             0.0,
-            warp_drive_ham.ship_speed(),
+            ship_speed,
             0.0,
             0.0,
-            particle_type,
+            &ParticleType::Massive,
         )
         .unwrap();
     states.push(ship);
