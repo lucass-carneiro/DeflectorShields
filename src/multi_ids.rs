@@ -100,13 +100,15 @@ pub fn make_multi_id(
     }?;
 
     // Ship
+    let real_ship_speed = ship_speed / f64::sqrt(1.0 - ship_speed * ship_speed);
+
     let ship = warp_drive_ham
         .make_normalized_state(
             0.0,
             0.0,
             0.0,
             0.0,
-            ship_speed,
+            real_ship_speed,
             0.0,
             0.0,
             &ParticleType::Massive,

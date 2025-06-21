@@ -1,9 +1,11 @@
 {
     "warp_drive_solution": {
         "AlcubierreSharp": {
-            "u": 0.5,
-            "v": 0.0,
-            "k": 0.1,
+            "bubble_speed": 0.5,
+            "interior_speed": {
+                "Constant": 0.5
+            },
+            "deflector_strength": 0.1,
             "epsilon": 1.0e-6,
             "radii_x": {
                 "radius": 4.0,
@@ -15,6 +17,7 @@
             }
         }
     },
+    "ship_speed": 0.0,
     "normalize_as": "Massive",
     "affine_data": {
         "lambda_max": 150.0,
