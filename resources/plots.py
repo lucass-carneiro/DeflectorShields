@@ -1,13 +1,14 @@
 """Deflector Shield Plotter.
 
 Usage:
-  plots.py <parameter-file> <data-file-folder>
+  plots.py [options] <parameter-file> <data-file-folder>
   plots.py (-h | --help)
   plots.py --version
 
 Options:
-  -h --help     Show this screen.
-  --version     Show version.
+  -h --help           Show this screen.
+  --version           Show version.
+  -b --follow-bubble  Follows the bubble.
 """
 import logging
 from docopt import docopt
@@ -62,7 +63,7 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius_y, sigma_x, sigma_y, ent_img):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius_x, radius_y, sigma_x, sigma_y, ent_img, follow_bubble, shutdown_t):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -77,7 +78,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     ent_y = df.item(4, -1)
 
     # Bubble position
-    bubble_x = v * t
+    bubble_x = bubble_speed * t
     bubble_y = 0.0
 
     plt.close("all")
@@ -87,9 +88,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     # Ship
     ax.scatter(ent_x, ent_y, marker="*", color="tab:blue", s=2)
 
-    # Bubble center
-    ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
-
+    # Enterprise
     ent_width, ent_height = ent_img.size
     ent_scale = 0.002
 
@@ -116,7 +115,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
     title_b = r"$"
     ax.set_title(f"{title_a}{t:.2f}{title_b}")
 
-    # Radii
+    # Bubble
     warp_bubble_start = plt.Circle(
         (bubble_x, bubble_y),
         radius_x,
@@ -147,32 +146,44 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, v, radius_x, radius
         linestyle="--"
     )
 
-    ax.add_patch(warp_bubble_start)
-    ax.add_patch(warp_bubble_end)
+    # Bubble center
+    if t <= shutdown_t:
+        ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
 
-    ax.add_patch(shield_start)
-    ax.add_patch(shield_end)
+        ax.add_patch(warp_bubble_start)
+        ax.add_patch(warp_bubble_end)
+
+        ax.add_patch(shield_start)
+        ax.add_patch(shield_end)
 
     # Ranges
     ax.set_ylim(-2.0 * sigma_y, 2.0 * sigma_y)
-    # ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
-    ax.set_xlim(bubble_x - 2.0 * sigma_y, bubble_x + 2.0 * sigma_y)
+
+    if follow_bubble:
+        ax.set_xlim(bubble_x - 2.0 * sigma_y, bubble_x + 2.0 * sigma_y)
+    else:
+        ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
 
     # Save figure
     fig.savefig(anim_file_name, dpi=300)
 
 
-def plot_multiple(prefix, parameters):
+def plot_multiple(prefix, parameters, follow_bubble):
     logger.info("Plotting multiple particle data")
 
     if "AlcubierreSharp" in parameters["warp_drive_solution"]:
-        v = parameters["warp_drive_solution"]["AlcubierreSharp"]["v"]
+        bubble_speed = parameters["warp_drive_solution"]["AlcubierreSharp"]["bubble_speed"]
 
         radius_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["radius"]
         sigma_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["sigma"]
 
         radius_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["radius"]
         sigma_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["sigma"]
+
+        shutdown_time = parameters["warp_drive_solution"]["AlcubierreSharp"]["interior_speed"]["SmoothShutDown"]["shutdown_time"]
+        shutdown_duration = parameters["warp_drive_solution"]["AlcubierreSharp"][
+            "interior_speed"]["SmoothShutDown"]["shutdown_duration"]
+        shutdown_t = shutdown_time + shutdown_duration
     else:
         raise RuntimeError(
             f"Parameter retrival no implemented for this warp drive"
@@ -199,12 +210,14 @@ def plot_multiple(prefix, parameters):
                 prefix,
                 ipc_file,
                 anim_folder,
-                v,
+                bubble_speed,
                 radius_x,
                 radius_y,
                 sigma_x,
                 sigma_y,
-                ent_img
+                ent_img,
+                follow_bubble,
+                shutdown_t
             )
 
         logger.info(f"Waiting for plotting jobs to finish")
@@ -234,12 +247,14 @@ def main(args):
 
     parameter_file = args["<parameter-file>"]
     output_file_prefix = args["<data-file-folder>"]
+    follow_bubble = bool(args["--follow-bubble"])
 
     parameters = read_parameter_file(parameter_file)
 
     plot_multiple(
         output_file_prefix,
-        parameters
+        parameters,
+        follow_bubble
     )
 
 
