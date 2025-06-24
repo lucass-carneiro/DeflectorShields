@@ -8,3 +8,4 @@ Cargo.lock
 /*.json
 *.pdf
 !resources/*.pdf
+!resources/ship.png
