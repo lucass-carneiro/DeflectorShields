@@ -9,6 +9,7 @@ Options:
   -h --help           Show this screen.
   --version           Show version.
   -b --follow-bubble  Follows the bubble.
+  -s --save-pdf       Saves a PDF file along a regular PNG file
 """
 import logging
 from docopt import docopt
@@ -63,12 +64,18 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius_x, radius_y, sigma_x, sigma_y, ent_img, follow_bubble, shutdown_t):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius_x, radius_y, sigma_x, sigma_y, ent_img, follow_bubble, shutdown_t, save_pdf):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
     it = int(df.item(0, 0))
     anim_file_name = os.path.join(anim_folder, f"{prefix}_{it:08d}.png")
+
+    if save_pdf:
+        anim_file_name_pdf = os.path.join(
+            anim_folder,
+            f"{prefix}_{it:08d}.pdf"
+        )
 
     # Current time
     t = df.item(2, 0)
@@ -167,8 +174,11 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     # Save figure
     fig.savefig(anim_file_name, dpi=300)
 
+    if save_pdf:
+        fig.savefig(anim_file_name_pdf)
 
-def plot_multiple(prefix, parameters, follow_bubble):
+
+def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
     logger.info("Plotting multiple particle data")
 
     if "AlcubierreSharp" in parameters["warp_drive_solution"]:
@@ -217,7 +227,8 @@ def plot_multiple(prefix, parameters, follow_bubble):
                 sigma_y,
                 ent_img,
                 follow_bubble,
-                shutdown_t
+                shutdown_t,
+                save_pdf
             )
 
         logger.info(f"Waiting for plotting jobs to finish")
@@ -248,13 +259,15 @@ def main(args):
     parameter_file = args["<parameter-file>"]
     output_file_prefix = args["<data-file-folder>"]
     follow_bubble = bool(args["--follow-bubble"])
+    save_pdf = bool(args["--save-pdf"])
 
     parameters = read_parameter_file(parameter_file)
 
     plot_multiple(
         output_file_prefix,
         parameters,
-        follow_bubble
+        follow_bubble,
+        save_pdf
     )
 
 

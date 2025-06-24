@@ -1,17 +1,8 @@
 use std::env;
 
-mod errors;
-mod evolve;
-mod multi_ids;
-mod output;
-mod params;
-mod types;
-mod warp_drive_hamiltonian;
-
-mod warp_drive_alcubierre;
-mod warp_drive_alcubierre_sharp;
-
-use warp_drive_hamiltonian::WarpDriveHamiltonian;
+use deflector_core::{
+    evolve, multi_ids, output, params, warp_drive_hamiltonian::WarpDriveHamiltonian,
+};
 
 fn init_logger() {
     use env_logger::{Builder, Env};
@@ -35,6 +26,7 @@ fn init_logger() {
 fn main() {
     init_logger();
 
+    // Parse cmd line
     let args: Vec<String> = env::args().collect();
 
     if args.len() != 3 {
@@ -45,6 +37,7 @@ fn main() {
     let param_file_name = &args[1];
     let output_file_name = &args[2];
 
+    // Deserialize parameter file
     let par = params::read_params(param_file_name).unwrap();
 
     // Get warp drive solution to use
@@ -65,7 +58,6 @@ fn main() {
     // Compute the number of time steps
     let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as usize;
 
-    // Time stepping loop
     for i in 0..=nlambda {
         let t = (i as f64) * par.affine_data.dlambda;
         log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
