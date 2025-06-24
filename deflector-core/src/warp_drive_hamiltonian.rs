@@ -22,7 +22,6 @@ pub trait WarpDriveHamiltonian {
     fn d_vz_dy(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn d_vz_dz(&self, q: &nalgebra::Vector4<f64>) -> f64;
 
-    // Position is contra-variant. Momentum is co-variant
     fn make_normalized_state(
         &self,
         t: f64,
