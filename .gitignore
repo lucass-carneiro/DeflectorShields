@@ -6,3 +6,5 @@ Cargo.lock
 *.mp4
 *.png
 /*.json
+*.pdf
+!resources/*.pdf
