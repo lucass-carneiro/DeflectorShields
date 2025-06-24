@@ -164,18 +164,27 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         ax.add_patch(shield_end)
 
     # Ranges
-    ax.set_ylim(-2.0 * sigma_y, 2.0 * sigma_y)
+    range_factor = 3.0
+    ax.set_ylim(-range_factor * sigma_y, range_factor * sigma_y)
 
     if follow_bubble:
-        ax.set_xlim(bubble_x - 2.0 * sigma_y, bubble_x + 2.0 * sigma_y)
+        ax.set_xlim(
+            bubble_x - range_factor * sigma_y,
+            bubble_x + range_factor * sigma_y
+        )
     else:
-        ax.set_xlim(ent_x - 2.0 * sigma_y, ent_x + 2.0 * sigma_y)
+        ax.set_xlim(
+            ent_x - range_factor * sigma_y,
+            ent_x + range_factor * sigma_y
+        )
 
     # Save figure
-    fig.savefig(anim_file_name, dpi=300)
+    fig.tight_layout()
+
+    fig.savefig(anim_file_name, dpi=300, bbox_inches="tight")
 
     if save_pdf:
-        fig.savefig(anim_file_name_pdf)
+        fig.savefig(anim_file_name_pdf, dpi=300, bbox_inches="tight")
 
 
 def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
@@ -208,7 +217,7 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
     ipc_file_list = os.listdir(prefix)
 
     # Enterprise image
-    ent_img = Image.open("resources/uss_enterprise.jpg")
+    ent_img = Image.open("resources/ship.png")
 
     # for every file
     logger.info(f"Submitting plotting jobs to pool")
