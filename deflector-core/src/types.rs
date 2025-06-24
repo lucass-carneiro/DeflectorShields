@@ -23,13 +23,13 @@ impl<T: Copy> ParticleStateComponents<T> {
     pub fn from_state(state: &ParticleState<T>) -> ParticleStateComponents<T> {
         ParticleStateComponents {
             t: state[0],
-            x: state[0],
-            y: state[0],
-            z: state[0],
-            pt: state[0],
-            px: state[0],
-            py: state[0],
-            pz: state[0],
+            x: state[1],
+            y: state[2],
+            z: state[3],
+            pt: state[4],
+            px: state[5],
+            py: state[6],
+            pz: state[7],
         }
     }
 }
