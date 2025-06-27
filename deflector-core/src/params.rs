@@ -1,8 +1,7 @@
 use crate::errors::ParamError;
 use crate::types::ParticleType;
 
-use crate::warp_drive_alcubierre::WarpDriveAlcubierre;
-use crate::warp_drive_alcubierre_sharp::WarpDriveAlcubierreSharp;
+use crate::wd_ours::WarpDriveOurs;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct AffineData {
@@ -13,6 +12,11 @@ pub struct AffineData {
 
 #[derive(Debug, serde::Deserialize)]
 pub enum MultiParticleID {
+    StaticParticle {
+        x: f64,
+        y: f64,
+        z: f64,
+    },
     StaticWall {
         position: f64,
         extent: f64,
@@ -28,8 +32,7 @@ pub enum MultiParticleID {
 
 #[derive(Debug, serde::Deserialize)]
 pub enum WarpDriveSolution {
-    Alcubierre(WarpDriveAlcubierre),
-    AlcubierreSharp(WarpDriveAlcubierreSharp),
+    Ours(WarpDriveOurs),
 }
 
 #[derive(Debug, serde::Deserialize)]

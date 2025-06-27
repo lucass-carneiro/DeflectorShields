@@ -1,8 +1,6 @@
 use std::env;
 
-use deflector_core::{
-    evolve, multi_ids, output, params, warp_drive_hamiltonian::WarpDriveHamiltonian,
-};
+use deflector_core::{evolve, multi_ids, output, params, warp_drive::WarpDrive};
 
 fn init_logger() {
     use env_logger::{Builder, Env};
@@ -41,9 +39,8 @@ fn main() {
     let par = params::read_params(param_file_name).unwrap();
 
     // Get warp drive solution to use
-    let warp_drive_solution: Box<dyn WarpDriveHamiltonian> = match par.warp_drive_solution {
-        params::WarpDriveSolution::Alcubierre(sol) => Box::new(sol),
-        params::WarpDriveSolution::AlcubierreSharp(sol) => Box::new(sol),
+    let warp_drive_solution: Box<dyn WarpDrive> = match par.warp_drive_solution {
+        params::WarpDriveSolution::Ours(sol) => Box::new(sol),
     };
 
     // Initialize particle state vectors. The ship is allways the last particle
@@ -59,8 +56,8 @@ fn main() {
     let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as usize;
 
     for i in 0..=nlambda {
-        let t = (i as f64) * par.affine_data.dlambda;
-        log::info!("Integrating step {}/{}, t = {}", i, nlambda, t);
+        let lambda = (i as f64) * par.affine_data.dlambda;
+        log::info!("Integrating step {}/{}, lambda = {}", i, nlambda, lambda);
 
         // Do output
         if (i % par.affine_data.out_every.unwrap_or(1usize)) == 0 {
@@ -68,7 +65,7 @@ fn main() {
 
             // Loop over particles
             for particle_idx in 0..states.len() {
-                out_file.append(particle_idx, i, t, &states[particle_idx]);
+                out_file.append(particle_idx, i, lambda, &states[particle_idx]);
 
                 evolve::rk4_step(
                     par.affine_data.dlambda,
