@@ -2,7 +2,7 @@ use crate::errors::NormalizationError;
 use crate::types::ParticleState;
 use crate::types::ParticleType;
 
-pub trait WarpDriveHamiltonian {
+pub trait WarpDrive {
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64;
@@ -22,6 +22,13 @@ pub trait WarpDriveHamiltonian {
     fn d_vz_dy(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn d_vz_dz(&self, q: &nalgebra::Vector4<f64>) -> f64;
 
+    fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64;
+
+    fn d_alp_dt(&self, q: &nalgebra::Vector4<f64>) -> f64;
+    fn d_alp_dx(&self, q: &nalgebra::Vector4<f64>) -> f64;
+    fn d_alp_dy(&self, q: &nalgebra::Vector4<f64>) -> f64;
+    fn d_alp_dz(&self, q: &nalgebra::Vector4<f64>) -> f64;
+
     fn make_normalized_state(
         &self,
         t: f64,
@@ -39,17 +46,18 @@ pub trait WarpDriveHamiltonian {
         let lvy = self.vy(&q);
         let lvz = self.vz(&q);
 
+        let lalp = self.alp(&q);
+
         let delta = match particle_type {
             ParticleType::Massive => -1.0,
             ParticleType::Photon => 0.0,
         };
 
-        let a = -0.5;
-        let b = -(lvx * px) - lvy * py - lvz * pz;
-        let c = (px * px + py * py + pz * pz
-            - (lvx * px + lvy * py + lvz * pz) * (lvx * px + lvy * py + lvz * pz)
-            - delta)
-            / 2.;
+        let a = -(1.0 / (lalp * lalp));
+        let b = (-2.0 * (lvx * px + lvy * py + lvz * pz)) / (lalp * lalp);
+        let c = px * px + py * py + pz * pz
+            - ((lvx * px + lvy * py + lvz * pz) * (lvx * px + lvy * py + lvz * pz)) / (lalp * lalp)
+            - delta;
 
         let discriminant = b * b - 4.0 * a * c;
 
@@ -96,22 +104,40 @@ pub trait WarpDriveHamiltonian {
         let dvzdy = self.d_vz_dy(&q);
         let dvzdz = self.d_vz_dz(&q);
 
-        let dhdpt = -pt - lvx * px - lvy * py - lvz * pz;
-        let dhdpx = px - lvx * (pt + lvx * px + lvy * py + lvz * pz);
-        let dhdpy = py - lvy * (pt + lvx * px + lvy * py + lvz * pz);
-        let dhdpz = pz - lvz * (pt + lvx * px + lvy * py + lvz * pz);
+        let lalp = self.alp(&q);
 
-        let dhdqt =
-            -((dvxdt * px + dvydt * py + dvzdt * pz) * (pt + lvx * px + lvy * py + lvz * pz));
+        let dalpdt = self.d_alp_dt(&q);
+        let dalpdx = self.d_alp_dx(&q);
+        let dalpdy = self.d_alp_dy(&q);
+        let dalpdz = self.d_alp_dz(&q);
 
-        let dhdqx =
-            -((dvxdx * px + dvydx * py + dvzdx * pz) * (pt + lvx * px + lvy * py + lvz * pz));
+        let dhdpt = -((pt + lvx * px + lvy * py + lvz * pz) / (lalp * lalp));
 
-        let dhdqy =
-            -((dvxdy * px + dvydy * py + dvzdy * pz) * (pt + lvx * px + lvy * py + lvz * pz));
+        let dhdpx = px - (lvx * (pt + lvx * px + lvy * py + lvz * pz)) / (lalp * lalp);
 
-        let dhdqz =
-            -((dvxdz * px + dvydz * py + dvzdz * pz) * (pt + lvx * px + lvy * py + lvz * pz));
+        let dhdpy = py - (lvy * (pt + lvx * px + lvy * py + lvz * pz)) / (lalp * lalp);
+
+        let dhdpz = pz - (lvz * (pt + lvx * px + lvy * py + lvz * pz)) / (lalp * lalp);
+
+        let dhdqt = ((pt + lvx * px + lvy * py + lvz * pz)
+            * (-(lalp * (dvxdt * px + dvydt * py + dvzdt * pz))
+                + dalpdt * (pt + lvx * px + lvy * py + lvz * pz)))
+            / f64::powi(lalp, 3);
+
+        let dhdqx = ((pt + lvx * px + lvy * py + lvz * pz)
+            * (-(lalp * (dvxdx * px + dvydx * py + dvzdx * pz))
+                + dalpdx * (pt + lvx * px + lvy * py + lvz * pz)))
+            / f64::powi(lalp, 3);
+
+        let dhdqy = ((pt + lvx * px + lvy * py + lvz * pz)
+            * (-(lalp * (dvxdy * px + dvydy * py + dvzdy * pz))
+                + dalpdy * (pt + lvx * px + lvy * py + lvz * pz)))
+            / f64::powi(lalp, 3);
+
+        let dhdqz = ((pt + lvx * px + lvy * py + lvz * pz)
+            * (-(lalp * (dvxdz * px + dvydz * py + dvzdz * pz))
+                + dalpdz * (pt + lvx * px + lvy * py + lvz * pz)))
+            / f64::powi(lalp, 3);
 
         ParticleState::from_column_slice(&[
             dhdpt, dhdpx, dhdpy, dhdpz, -dhdqt, -dhdqx, -dhdqy, -dhdqz,

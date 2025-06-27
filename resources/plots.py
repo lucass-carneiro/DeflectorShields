@@ -64,7 +64,7 @@ def alcubierre_f(v, sigma, radius, t, x, y, z):
     return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius_x, radius_y, sigma_x, sigma_y, ent_img, follow_bubble, shutdown_t, save_pdf):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius, sigma, ent_img, follow_bubble, shutdown_t, save_pdf):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -125,31 +125,16 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     # Bubble
     warp_bubble_start = plt.Circle(
         (bubble_x, bubble_y),
-        radius_x,
+        radius,
         fill=False,
         color="black"
     )
 
     warp_bubble_end = plt.Circle(
         (bubble_x, bubble_y),
-        radius_x + sigma_x,
+        radius + sigma,
         fill=False,
         color="black",
-        linestyle="--"
-    )
-
-    shield_start = plt.Circle(
-        (bubble_x, bubble_y),
-        radius_y,
-        fill=False,
-        color="tab:blue"
-    )
-
-    shield_end = plt.Circle(
-        (bubble_x, bubble_y),
-        radius_y + sigma_y,
-        fill=False,
-        color="tab:blue",
         linestyle="--"
     )
 
@@ -160,22 +145,19 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         ax.add_patch(warp_bubble_start)
         ax.add_patch(warp_bubble_end)
 
-        ax.add_patch(shield_start)
-        ax.add_patch(shield_end)
-
     # Ranges
     range_factor = 3.0
-    ax.set_ylim(-range_factor * sigma_y, range_factor * sigma_y)
+    ax.set_ylim(-range_factor * sigma, range_factor * sigma)
 
     if follow_bubble:
         ax.set_xlim(
-            bubble_x - range_factor * sigma_y,
-            bubble_x + range_factor * sigma_y
+            bubble_x - range_factor * sigma,
+            bubble_x + range_factor * sigma
         )
     else:
         ax.set_xlim(
-            ent_x - range_factor * sigma_y,
-            ent_x + range_factor * sigma_y
+            ent_x - range_factor * sigma,
+            ent_x + range_factor * sigma
         )
 
     # Save figure
@@ -190,22 +172,18 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
 def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
     logger.info("Plotting multiple particle data")
 
-    if "AlcubierreSharp" in parameters["warp_drive_solution"]:
-        bubble_speed = parameters["warp_drive_solution"]["AlcubierreSharp"]["bubble_speed"]
+    if "Ours" in parameters["warp_drive_solution"]:
+        u = parameters["warp_drive_solution"]["Ours"]["u"]
 
-        radius_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["radius"]
-        sigma_x = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_x"]["sigma"]
+        radius = parameters["warp_drive_solution"]["Ours"]["radius"]
+        sigma = parameters["warp_drive_solution"]["Ours"]["sigma"]
 
-        radius_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["radius"]
-        sigma_y = parameters["warp_drive_solution"]["AlcubierreSharp"]["radii_y"]["sigma"]
-
-        shutdown_time = parameters["warp_drive_solution"]["AlcubierreSharp"]["interior_speed"]["SmoothShutDown"]["shutdown_time"]
-        shutdown_duration = parameters["warp_drive_solution"]["AlcubierreSharp"][
-            "interior_speed"]["SmoothShutDown"]["shutdown_duration"]
+        shutdown_time = parameters["warp_drive_solution"]["Ours"]["ts"]
+        shutdown_duration = parameters["warp_drive_solution"]["Ours"]["ds"]
         shutdown_t = shutdown_time + shutdown_duration
     else:
         raise RuntimeError(
-            f"Parameter retrival no implemented for this warp drive"
+            f"Parameter retrival not implemented for this warp drive"
         )
 
     anim_folder = f"{prefix}_anim"
@@ -229,11 +207,9 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
                 prefix,
                 ipc_file,
                 anim_folder,
-                bubble_speed,
-                radius_x,
-                radius_y,
-                sigma_x,
-                sigma_y,
+                u,
+                radius,
+                sigma,
                 ent_img,
                 follow_bubble,
                 shutdown_t,
