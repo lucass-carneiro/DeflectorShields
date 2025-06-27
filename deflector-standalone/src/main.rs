@@ -67,7 +67,7 @@ fn main() {
             for particle_idx in 0..states.len() {
                 out_file.append(particle_idx, i, lambda, &states[particle_idx]);
 
-                evolve::rk4_step(
+                evolve::rk4_step_dyn(
                     par.affine_data.dlambda,
                     &warp_drive_solution,
                     &mut states[particle_idx],
@@ -78,7 +78,7 @@ fn main() {
         } else {
             // Loop over particles
             for particle_idx in 0..states.len() {
-                evolve::rk4_step(
+                evolve::rk4_step_dyn(
                     par.affine_data.dlambda,
                     &warp_drive_solution,
                     &mut states[particle_idx],
