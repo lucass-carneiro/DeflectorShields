@@ -3,14 +3,14 @@ use crate::warp_drive::WarpDrive;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct WarpDriveOurs {
-    radius: f64,
-    sigma: f64,
-    u: f64,
-    u0: f64,
-    k0: f64,
-    ts: f64,
-    ds: f64,
-    epsilon: f64,
+    pub radius: f64,
+    pub sigma: f64,
+    pub u: f64,
+    pub u0: f64,
+    pub k0: f64,
+    pub ts: f64,
+    pub ds: f64,
+    pub epsilon: f64
 }
 
 impl WarpDriveOurs {
