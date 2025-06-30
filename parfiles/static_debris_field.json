@@ -1,20 +1,15 @@
 {
     "warp_drive_solution": {
-        "AlcubierreSharp": {
-            "bubble_speed": 0.5,
-            "interior_speed": {
-                "Constant": 0.5
-            },
-            "deflector_strength": 0.1,
-            "epsilon": 1.0e-6,
-            "radii_x": {
-                "radius": 4.0,
-                "sigma": 4.0
-            },
-            "radii_y": {
-                "radius": 4.0,
-                "sigma": 4.0
-            }
+        "Ours": {
+            "radius": 4.0,
+            "sigma": 4.0,
+            "u": 0.5,
+            "u0": 0.5,
+            "k0": 0.0,
+            "ts": 50.0,
+            "ds": -1.0,
+            "gamma": 0.0,
+            "epsilon": 1.0e-12
         }
     },
     "ship_speed": 0.0,

@@ -10,7 +10,8 @@ pub struct WarpDriveOurs {
     pub k0: f64,
     pub ts: f64,
     pub ds: f64,
-    pub epsilon: f64
+    pub gamma: f64,
+    pub epsilon: f64,
 }
 
 impl WarpDriveOurs {
@@ -281,25 +282,46 @@ impl WarpDrive for WarpDriveOurs {
         w * drhozdz * f + w * rhoz * dfdr * drdz
     }
 
-    // TODO: Create cool alpha
-    fn alp(&self, _: &nalgebra::Vector4<f64>) -> f64 {
-        1.0
+    fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let lr = self.r(&q);
+        let f = cinf(lr, 1.0, self.radius, self.sigma);
+
+        1.0 - self.gamma * f
     }
 
-    // TODO: Add cool alpha derivatives
-    fn d_alp_dt(&self, _: &nalgebra::Vector4<f64>) -> f64 {
-        0.0
+    fn d_alp_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let lr = self.r(&q);
+
+        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let drdt = self.d_r_dt(&q);
+
+        -self.gamma * dfdr * drdt
     }
 
-    fn d_alp_dx(&self, _: &nalgebra::Vector4<f64>) -> f64 {
-        0.0
+    fn d_alp_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let lr = self.r(&q);
+
+        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let drdx = self.d_r_dx(&q);
+
+        -self.gamma * dfdr * drdx
     }
 
-    fn d_alp_dy(&self, _: &nalgebra::Vector4<f64>) -> f64 {
-        0.0
+    fn d_alp_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let lr = self.r(&q);
+
+        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let drdy = self.d_r_dy(&q);
+
+        -self.gamma * dfdr * drdy
     }
 
-    fn d_alp_dz(&self, _: &nalgebra::Vector4<f64>) -> f64 {
-        0.0
+    fn d_alp_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let lr = self.r(&q);
+
+        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let drdz = self.d_r_dz(&q);
+
+        -self.gamma * dfdr * drdz
     }
 }
