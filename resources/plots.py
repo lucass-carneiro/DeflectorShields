@@ -139,7 +139,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     )
 
     # Bubble center
-    if t <= shutdown_t:
+    if shutdown_t is None or t <= shutdown_t:
         ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
 
         ax.add_patch(warp_bubble_start)
@@ -180,7 +180,10 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
 
         shutdown_time = parameters["warp_drive_solution"]["Ours"]["ts"]
         shutdown_duration = parameters["warp_drive_solution"]["Ours"]["ds"]
-        shutdown_t = shutdown_time + shutdown_duration
+        if shutdown_duration < 0.0:
+            shutdown_t = None
+        else:
+            shutdown_t = shutdown_time + shutdown_duration
     else:
         raise RuntimeError(
             f"Parameter retrival not implemented for this warp drive"
