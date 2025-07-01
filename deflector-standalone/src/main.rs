@@ -40,7 +40,14 @@ fn main() {
 
     // Get warp drive solution to use
     let warp_drive_solution: Box<dyn WarpDrive> = match par.warp_drive_solution {
-        params::WarpDriveSolution::Ours(sol) => Box::new(sol),
+        params::WarpDriveSolution::Ours(sol) => {
+            log::info!("Using our warp drive");
+            Box::new(sol)
+        }
+        params::WarpDriveSolution::Natario(sol) => {
+            log::info!("Using Natario warp drive");
+            Box::new(sol)
+        }
     };
 
     // Initialize particle state vectors. The ship is allways the last particle

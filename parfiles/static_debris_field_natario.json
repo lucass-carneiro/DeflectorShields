@@ -1,0 +1,25 @@
+{
+    "warp_drive_solution": {
+        "Natario": {
+            "radius": 4.0,
+            "sigma": 4.0,
+            "u": 0.5,
+            "epsilon": 1.0e-12
+        }
+    },
+    "ship_speed": 0.0,
+    "normalize_as": "Massive",
+    "affine_data": {
+        "lambda_max": 10.0,
+        "dlambda": 0.1,
+        "out_every": 10
+    },
+    "multi_particle_id": {
+        "StaticDebrisField": {
+            "start": 10.0,
+            "width": 5.0,
+            "height": 20.0,
+            "num": 1000
+        }
+    }
+}
