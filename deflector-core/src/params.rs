@@ -1,6 +1,7 @@
 use crate::errors::ParamError;
 use crate::types::ParticleType;
 
+use crate::wd_natario::WarpDriveNatario;
 use crate::wd_ours::WarpDriveOurs;
 
 #[derive(Debug, serde::Deserialize)]
@@ -33,6 +34,7 @@ pub enum MultiParticleID {
 #[derive(Debug, serde::Deserialize)]
 pub enum WarpDriveSolution {
     Ours(WarpDriveOurs),
+    Natario(WarpDriveNatario),
 }
 
 #[derive(Debug, serde::Deserialize)]

@@ -184,6 +184,13 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
             shutdown_t = None
         else:
             shutdown_t = shutdown_time + shutdown_duration
+    elif "Natario" in parameters["warp_drive_solution"]:
+        u = parameters["warp_drive_solution"]["Natario"]["u"]
+
+        radius = parameters["warp_drive_solution"]["Natario"]["radius"]
+        sigma = parameters["warp_drive_solution"]["Natario"]["sigma"]
+
+        shutdown_t = None
     else:
         raise RuntimeError(
             f"Parameter retrival not implemented for this warp drive"
@@ -196,6 +203,7 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
         os.mkdir(anim_folder)
 
     ipc_file_list = os.listdir(prefix)
+    print(ipc_file_list)
 
     # Enterprise image
     ent_img = Image.open("resources/ship.png")
