@@ -78,15 +78,15 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         )
 
     # Current time
-    t = df.item(2, 0)
+    t = df.item(2, -1)
 
     # Ship position
     ent_x = df.item(3, -1)
     ent_y = df.item(4, -1)
 
     # Bubble position
-    bubble_x = bubble_speed * t
-    bubble_y = 0.0
+    bubble_x = ent_x
+    bubble_y = ent_y
 
     plt.close("all")
 
@@ -203,7 +203,6 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
         os.mkdir(anim_folder)
 
     ipc_file_list = os.listdir(prefix)
-    print(ipc_file_list)
 
     # Enterprise image
     ent_img = Image.open("resources/ship.png")

@@ -4,18 +4,17 @@
             "radius": 4.0,
             "sigma": 4.0,
             "u": 0.5,
-            "u0": 0.5,
+            "u0": 0.6,
             "k0": 0.0,
-            "ts": 50.0,
-            "ds": -1.0,
+            "ts": 5.0,
+            "ds": 5.0,
             "gamma": 0.0,
             "epsilon": 1.0e-12
         }
     },
-    "ship_speed": 0.0,
     "normalize_as": "Massive",
     "affine_data": {
-        "lambda_max": 150.0,
+        "lambda_max": 100.0,
         "dlambda": 0.1,
         "out_every": 10
     },

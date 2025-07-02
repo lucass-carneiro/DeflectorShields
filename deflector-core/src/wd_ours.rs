@@ -77,6 +77,14 @@ impl WarpDriveOurs {
 }
 
 impl WarpDrive for WarpDriveOurs {
+    fn get_bubble_speed(&self) -> f64 {
+        self.u
+    }
+
+    fn get_dragging_speed(&self) -> f64 {
+        self.u0
+    }
+
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let t = q[0];
         let lr = self.r(&q);
