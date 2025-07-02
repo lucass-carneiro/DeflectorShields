@@ -1,7 +1,6 @@
 use crate::errors::ParamError;
 use crate::types::ParticleType;
 
-use crate::wd_natario::WarpDriveNatario;
 use crate::wd_ours::WarpDriveOurs;
 
 #[derive(Debug, serde::Deserialize)]
@@ -34,7 +33,6 @@ pub enum MultiParticleID {
 #[derive(Debug, serde::Deserialize)]
 pub enum WarpDriveSolution {
     Ours(WarpDriveOurs),
-    Natario(WarpDriveNatario),
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -43,7 +41,6 @@ pub struct Params {
     pub normalize_as: ParticleType,
     pub affine_data: AffineData,
     pub multi_particle_id: MultiParticleID,
-    pub ship_speed: f64,
 }
 
 pub fn read_params(file_name: &str) -> Result<Params, ParamError> {

@@ -44,17 +44,12 @@ fn main() {
             log::info!("Using our warp drive");
             Box::new(sol)
         }
-        params::WarpDriveSolution::Natario(sol) => {
-            log::info!("Using Natario warp drive");
-            Box::new(sol)
-        }
     };
 
     // Initialize particle state vectors. The ship is allways the last particle
     let mut states = multi_ids::make_multi_id(
         par.multi_particle_id,
         &par.normalize_as,
-        par.ship_speed,
         &warp_drive_solution,
     )
     .unwrap();

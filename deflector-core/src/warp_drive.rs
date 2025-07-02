@@ -3,6 +3,10 @@ use crate::types::ParticleState;
 use crate::types::ParticleType;
 
 pub trait WarpDrive {
+    fn get_bubble_speed(&self) -> f64;
+
+    fn get_dragging_speed(&self) -> f64;
+
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64;
