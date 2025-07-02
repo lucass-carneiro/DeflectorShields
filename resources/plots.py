@@ -146,7 +146,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         ax.add_patch(warp_bubble_end)
 
     # Ranges
-    range_factor = 3.0
+    range_factor = 5.0
     ax.set_ylim(-range_factor * sigma, range_factor * sigma)
 
     if follow_bubble:
