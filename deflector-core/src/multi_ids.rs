@@ -7,6 +7,24 @@ use rand::Rng;
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 
+fn make_single_particle(
+    x: f64,
+    y: f64,
+    z: f64,
+    px: f64,
+    py: f64,
+    pz: f64,
+    particle_type: &ParticleType,
+    warp_drive: &Box<dyn WarpDrive>,
+) -> Result<ParticleStates<f64>, NormalizationError> {
+    let mut states: ParticleStates<f64> = Vec::new();
+
+    let state = warp_drive.make_normalized_state(0.0, x, y, z, px, py, pz, particle_type)?;
+    states.push(state);
+
+    Ok(states)
+}
+
 fn make_static_particle(
     x: f64,
     y: f64,
@@ -99,6 +117,14 @@ pub fn make_multi_id(
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     // Particles
     let mut states = match id {
+        MultiParticleID::SingleParticle {
+            x,
+            y,
+            z,
+            px,
+            py,
+            pz,
+        } => make_single_particle(x, y, z, px, py, pz, particle_type, warp_drive),
         MultiParticleID::StaticParticle { x, y, z } => {
             make_static_particle(x, y, z, particle_type, warp_drive)
         }

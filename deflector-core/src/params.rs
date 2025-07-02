@@ -12,6 +12,14 @@ pub struct AffineData {
 
 #[derive(Debug, serde::Deserialize)]
 pub enum MultiParticleID {
+    SingleParticle {
+        x: f64,
+        y: f64,
+        z: f64,
+        px: f64,
+        py: f64,
+        pz: f64,
+    },
     StaticParticle {
         x: f64,
         y: f64,
