@@ -55,20 +55,11 @@ def read_parameter_file(file_path):
         return json.load(file)
 
 
-def alcubierre_r(v, t, x, y, z):
-    return np.sqrt((x - v*t)**2 + y**2 + z**2)
-
-
-def alcubierre_f(v, sigma, radius, t, x, y, z):
-    r = alcubierre_r(v, t, x, y, z)
-    return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
-
-
 def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius, sigma, ent_img, follow_bubble, shutdown_t, save_pdf):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
-    it = int(df.item(0, 0))
+    it = int(df.item(0, -1))
     anim_file_name = os.path.join(anim_folder, f"{prefix}_{it:08d}.png")
 
     if save_pdf:
@@ -78,11 +69,11 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         )
 
     # Current time
-    t = df.item(2, -1)
+    t = df.item(1, -1)
 
     # Ship position
-    ent_x = df.item(3, -1)
-    ent_y = df.item(4, -1)
+    ent_x = df.item(2, -1)
+    ent_y = df.item(3, -1)
 
     # Bubble position
     bubble_x = ent_x
@@ -111,8 +102,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
 
     # Particles
     for i in range(0, len(df.columns) - 1):
-        x = df.item(3, i)
-        y = df.item(4, i)
+        x = df.item(2, i)
+        y = df.item(3, i)
         ax.scatter(x, y, marker="o", color="tab:red", s=2)
 
     ax.set_xlabel(r"$x$")
@@ -163,7 +154,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     # Save figure
     fig.tight_layout()
 
-    fig.savefig(anim_file_name, dpi=300, bbox_inches="tight")
+    fig.savefig(anim_file_name, dpi=300)
 
     if save_pdf:
         fig.savefig(anim_file_name_pdf, dpi=300, bbox_inches="tight")
@@ -172,29 +163,17 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
 def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
     logger.info("Plotting multiple particle data")
 
-    if "Ours" in parameters["warp_drive_solution"]:
-        u = parameters["warp_drive_solution"]["Ours"]["u"]
+    u = parameters["warp_drive"]["u"]
 
-        radius = parameters["warp_drive_solution"]["Ours"]["radius"]
-        sigma = parameters["warp_drive_solution"]["Ours"]["sigma"]
+    radius = parameters["warp_drive"]["radius"]
+    sigma = parameters["warp_drive"]["sigma"]
 
-        shutdown_time = parameters["warp_drive_solution"]["Ours"]["ts"]
-        shutdown_duration = parameters["warp_drive_solution"]["Ours"]["ds"]
-        if shutdown_duration < 0.0:
-            shutdown_t = None
-        else:
-            shutdown_t = shutdown_time + shutdown_duration
-    elif "Natario" in parameters["warp_drive_solution"]:
-        u = parameters["warp_drive_solution"]["Natario"]["u"]
-
-        radius = parameters["warp_drive_solution"]["Natario"]["radius"]
-        sigma = parameters["warp_drive_solution"]["Natario"]["sigma"]
-
+    shutdown_time = parameters["warp_drive"]["ts"]
+    shutdown_duration = parameters["warp_drive"]["ds"]
+    if shutdown_duration < 0.0:
         shutdown_t = None
     else:
-        raise RuntimeError(
-            f"Parameter retrival not implemented for this warp drive"
-        )
+        shutdown_t = shutdown_time + shutdown_duration
 
     anim_folder = f"{prefix}_anim"
 
