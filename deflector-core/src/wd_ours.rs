@@ -118,20 +118,6 @@ impl WarpDrive for WarpDriveOurs {
     }
 
     // Vx Derivatives
-    fn d_vx_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let t = q[0];
-        let lr = self.r(&q);
-
-        let w = cinf(t, self.u0, self.ts, self.ds);
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
-
-        let dwdt = d_cinf_dx(t, self.u0, self.ts, self.ds);
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
-        let drdt = self.d_r_dt(&q);
-
-        dwdt * f + w * dfdr * drdt
-    }
-
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let t = q[0];
         let lr = self.r(&q);
@@ -169,21 +155,6 @@ impl WarpDrive for WarpDriveOurs {
     }
 
     // Vy Derivatives
-    fn d_vy_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let t = q[0];
-        let lr = self.r(&q);
-        let rhoy = self.rho_y(&q);
-
-        let w = cinf(t, self.k0, self.ts, self.ds);
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
-
-        let dwdt = d_cinf_dx(t, self.k0, self.ts, self.ds);
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
-        let drdt = self.d_r_dt(&q);
-
-        dwdt * rhoy * f + w * rhoy * dfdr * drdt
-    }
-
     fn d_vy_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let t = q[0];
         let lr = self.r(&q);
@@ -230,21 +201,6 @@ impl WarpDrive for WarpDriveOurs {
     }
 
     // Vz derivatives
-    fn d_vz_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let t = q[0];
-        let lr = self.r(&q);
-        let rhoz = self.rho_z(&q);
-
-        let w = cinf(t, self.k0, self.ts, self.ds);
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
-
-        let dwdt = d_cinf_dx(t, self.k0, self.ts, self.ds);
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
-        let drdt = self.d_r_dt(&q);
-
-        dwdt * rhoz * f + w * rhoz * dfdr * drdt
-    }
-
     fn d_vz_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let t = q[0];
         let lr = self.r(&q);
@@ -295,15 +251,6 @@ impl WarpDrive for WarpDriveOurs {
         let f = cinf(lr, 1.0, self.radius, self.sigma);
 
         1.0 - self.gamma * f
-    }
-
-    fn d_alp_dt(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let lr = self.r(&q);
-
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
-        let drdt = self.d_r_dt(&q);
-
-        -self.gamma * dfdr * drdt
     }
 
     fn d_alp_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {

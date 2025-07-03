@@ -1,5 +1,5 @@
 use crate::errors::NormalizationError;
-use crate::params::MultiParticleID;
+use crate::params::InitialData;
 use crate::types::{ParticleStates, ParticleType};
 use crate::warp_drive::WarpDrive;
 
@@ -7,147 +7,104 @@ use rand::Rng;
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256PlusPlus;
 
-fn make_single_particle(
+const RNG_SEED: [u8; 32] = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+    27, 28, 29, 30, 31, 32,
+];
+
+fn make_single_particle<T: WarpDrive>(
     x: f64,
     y: f64,
     z: f64,
-    px: f64,
-    py: f64,
-    pz: f64,
+    vx: f64,
+    vy: f64,
+    vz: f64,
     particle_type: &ParticleType,
-    warp_drive: &Box<dyn WarpDrive>,
+    warp_drive: &T,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     let mut states: ParticleStates<f64> = Vec::new();
 
-    let state = warp_drive.make_normalized_state(0.0, x, y, z, px, py, pz, particle_type)?;
+    let state = warp_drive.make_normalized_state(x, y, z, vx, vy, vz, particle_type)?;
     states.push(state);
 
     Ok(states)
 }
 
-fn make_static_particle(
-    x: f64,
-    y: f64,
-    z: f64,
-    particle_type: &ParticleType,
-    warp_drive: &Box<dyn WarpDrive>,
-) -> Result<ParticleStates<f64>, NormalizationError> {
-    let mut states: ParticleStates<f64> = Vec::new();
-
-    let state = warp_drive.make_normalized_state(0.0, x, y, z, 0.0, 0.0, 0.0, particle_type)?;
-    states.push(state);
-
-    Ok(states)
-}
-
-fn make_static_wall(
-    position: f64,
-    extent: f64,
+fn make_random_y_stream<T: WarpDrive>(
+    start: f64,
+    length: f64,
+    y_range: f64,
+    vy_range: f64,
     num: u64,
     particle_type: &ParticleType,
-    warp_drive: &Box<dyn WarpDrive>,
+    warp_drive: &T,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
+    let mut rng = Xoshiro256PlusPlus::from_seed(RNG_SEED);
+
     let mut states: ParticleStates<f64> = Vec::new();
 
-    let abs_extent = f64::abs(extent);
-    let dy = (2.0 * abs_extent) / ((num - 1) as f64);
+    let abs_length = f64::abs(length);
+    let abs_height = f64::abs(y_range);
+    let abs_vy = f64::abs(vy_range);
+
+    let x0 = start;
+    let xf = start + abs_length;
+    let dx = (xf - x0) / (num as f64);
+
+    let y0 = -abs_height;
+    let yf = abs_height;
+
+    let vy0 = -abs_vy;
+    let vyf = abs_vy;
 
     // Particles
     for i in 0..num {
-        let y = -abs_extent + (i as f64) * dy;
-        let state = warp_drive.make_normalized_state(
-            0.0,
-            position,
-            y,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            particle_type,
-        )?;
-        states.push(state);
-    }
-
-    Ok(states)
-}
-
-fn make_static_debris_field(
-    start: f64,
-    width: f64,
-    height: f64,
-    num: u64,
-    particle_type: &ParticleType,
-    warp_drive: &Box<dyn WarpDrive>,
-) -> Result<ParticleStates<f64>, NormalizationError> {
-    let seed: [u8; 32] = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-        26, 27, 28, 29, 30, 31, 32,
-    ];
-
-    let mut rng = Xoshiro256PlusPlus::from_seed(seed);
-
-    let mut states: ParticleStates<f64> = Vec::new();
-
-    let abs_width = f64::abs(width);
-    let abs_height = f64::abs(height);
-
-    let x0 = start;
-    let xf = start + abs_width;
-
-    let y0 = -abs_height / 2.0;
-    let yf = abs_height / 2.0;
-
-    // Particles
-    for _ in 0..num {
-        let x = rng.random_range(x0..=xf);
+        let x = x0 + (i as f64) * dx;
         let y = rng.random_range(y0..=yf);
+        let vy = rng.random_range(vy0..=vyf);
 
-        let state =
-            warp_drive.make_normalized_state(0.0, x, y, 0.0, 0.0, 0.0, 0.0, particle_type)?;
+        let state = warp_drive.make_normalized_state(x, y, 0.0, 0.0, vy, 0.0, particle_type)?;
         states.push(state);
     }
 
     Ok(states)
 }
 
-pub fn make_multi_id(
-    id: MultiParticleID,
+pub fn make_initial_data<T: WarpDrive>(
+    id: InitialData,
     particle_type: &ParticleType,
-    warp_drive: &Box<dyn WarpDrive>,
+    warp_drive: &T,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
-    // Particles
     let mut states = match id {
-        MultiParticleID::SingleParticle {
+        InitialData::SingleParticle {
             x,
             y,
             z,
-            px,
-            py,
-            pz,
-        } => make_single_particle(x, y, z, px, py, pz, particle_type, warp_drive),
-        MultiParticleID::StaticParticle { x, y, z } => {
-            make_static_particle(x, y, z, particle_type, warp_drive)
-        }
-
-        MultiParticleID::StaticWall {
-            position,
-            extent,
-            num,
-        } => make_static_wall(position, extent, num, particle_type, warp_drive),
-
-        MultiParticleID::StaticDebrisField {
+            vx,
+            vy,
+            vz,
+        } => make_single_particle(x, y, z, vx, vy, vz, particle_type, warp_drive),
+        InitialData::RandomYStream {
             start,
-            width,
-            height,
+            length,
+            y_range,
+            vy_range,
             num,
-        } => make_static_debris_field(start, width, height, num, particle_type, warp_drive),
+        } => make_random_y_stream(
+            start,
+            length,
+            y_range,
+            vy_range,
+            num,
+            particle_type,
+            warp_drive,
+        ),
     }?;
 
     // Ship
     let ship_speed = warp_drive.get_bubble_speed() - warp_drive.get_dragging_speed();
     let ship = warp_drive
         .make_normalized_state(
-            0.0,
             0.0,
             0.0,
             0.0,
@@ -159,5 +116,5 @@ pub fn make_multi_id(
         .unwrap();
     states.push(ship);
 
-    return Ok(states);
+    Ok(states)
 }

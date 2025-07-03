@@ -20,14 +20,14 @@ impl IpcMultiFile {
         &mut self,
         particle_index: usize,
         iteration: usize,
-        lambda: f64,
+        time: f64,
         state_vector: &ParticleState<f64>,
     ) {
         let col = Column::new(
             format!("particle {particle_index}").into(),
             [
                 iteration as f64,
-                lambda,
+                time,
                 state_vector[0],
                 state_vector[1],
                 state_vector[2],
@@ -35,7 +35,6 @@ impl IpcMultiFile {
                 state_vector[4],
                 state_vector[5],
                 state_vector[6],
-                state_vector[7],
             ],
         );
         self.df.with_column(col).unwrap();

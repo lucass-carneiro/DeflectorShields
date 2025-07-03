@@ -16,14 +16,13 @@ pub enum ParamError {
 }
 
 #[derive(thiserror::Error, Debug)]
-#[error("State q = ({t}, {x}, {y}, {z}) p = (?, {px}, {py}, {pz}) is not normalizable")]
+#[error("State x = ({x}, {y}, {z}) v = (?, {vx}, {vy}, {vz}) is not normalizable")]
 pub struct NormalizationError {
     pub particle_type: ParticleType,
-    pub t: f64,
     pub x: f64,
     pub y: f64,
     pub z: f64,
-    pub px: f64,
-    pub py: f64,
-    pub pz: f64,
+    pub vx: f64,
+    pub vy: f64,
+    pub vz: f64,
 }
