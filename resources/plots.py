@@ -76,8 +76,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     ent_y = df.item(3, -1)
 
     # Bubble position
-    bubble_x = ent_x
-    bubble_y = ent_y
+    bubble_x = bubble_speed * t
+    bubble_y = 0.0
 
     plt.close("all")
 
