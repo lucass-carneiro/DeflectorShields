@@ -67,7 +67,7 @@ pub trait WarpDrive {
 
     fn rhs(&self, t: f64, state: &ParticleState<f64>) -> ParticleState<f64> {
         let q = nalgebra::Vector4::new(t, state[0], state[1], state[2]);
-        let (vx_u, vy_u, vz_u) = (state[3], state[4], state[5]);
+        let (velx, vely, velz) = (state[3], state[4], state[5]);
         let energy = state[6];
 
         let lvx = self.vx(&q);
@@ -92,91 +92,43 @@ pub trait WarpDrive {
         let dalpdy = self.d_alp_dy(&q);
         let dalpdz = self.d_alp_dz(&q);
 
-        let dx_udt = lvx + lalp * vx_u;
+        let dx_dt = lvx + lalp * velx;
 
-        let dy_udt = lvy + lalp * vy_u;
+        let dy_dt = lvy + lalp * vely;
 
-        let dz_udt = lvz + lalp * vz_u;
+        let dz_dt = lvz + lalp * velz;
 
-        let dvx_dt = (2.0 * dvxdx * vx_u
-            + dvxdx * (lalp * lalp) * vx_u
-            + dvxdy * lvx * vx_u
-            + dvydx * lvx * vx_u
-            + dvxdz * lvy * vx_u
-            + dvzdx * lvy * vx_u
-            + dvxdx * (lalp * lalp) * f64::powi(vx_u, 3)
-            + dalpdx * (lalp * lalp) * (-1.0 + vx_u * vx_u)
-            + dvxdy * vy_u
-            + dvydx * vy_u
-            + dvxdy * (lalp * lalp) * vy_u
-            + 2.0 * dvydy * lvx * vy_u
-            + dvydz * lvy * vy_u
-            + dvzdy * lvy * vy_u
-            + dalpdy * (lalp * lalp) * vx_u * vy_u
-            + dvxdy * (lalp * lalp) * (vx_u * vx_u) * vy_u
-            + dvydx * (lalp * lalp) * (vx_u * vx_u) * vy_u
-            + dvydy * (lalp * lalp) * vx_u * (vy_u * vy_u)
-            + (dvxdz
-                + dvzdx
-                + (dvydz + dvzdy) * lvx
-                + 2.0 * dvzdz * lvy
-                + dvxdz * (lalp * lalp) * (1.0 + vx_u * vx_u)
-                + lalp * lalp * vx_u * (dalpdz + dvzdx * vx_u + (dvydz + dvzdy) * vy_u))
-                * vz_u
-            + dvzdz * (lalp * lalp) * vx_u * (vz_u * vz_u))
-            / (lalp * lalp);
+        let dvelx_dt = dalpdx * (-1.0 + velx * velx) - dvydx * vely - dvzdx * velz
+            + velx
+                * (dvxdx * (-1.0 + velx * velx)
+                    + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely)
+                    + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * velz
+                    + dvzdz * (velz * velz));
 
-        let dvy_dt = -dalpdy - dvxdy * vx_u - dvydy * vy_u
-            + dalpdx * vx_u * vy_u
-            + dvxdx * (vx_u * vx_u) * vy_u
-            + dalpdy * (vy_u * vy_u)
-            + dvxdy * vx_u * (vy_u * vy_u)
-            + dvydx * vx_u * (vy_u * vy_u)
-            + dvydy * f64::powi(vy_u, 3)
-            - dvzdy * vz_u
-            + dalpdz * vy_u * vz_u
-            + dvxdz * vx_u * vy_u * vz_u
-            + dvzdx * vx_u * vy_u * vz_u
-            + dvydz * (vy_u * vy_u) * vz_u
-            + dvzdy * (vy_u * vy_u) * vz_u
-            + dvzdz * vy_u * (vz_u * vz_u)
-            + (lvx * lvx * ((dvxdy + dvydx) * vx_u + 2.0 * dvydy * vy_u + (dvydz + dvzdy) * vz_u))
-                / (lalp * lalp)
-            + (lvx
-                * (2.0 * dvxdx * vx_u
-                    + (dvxdz + dvzdx) * lvy * vx_u
-                    + (dvxdy + dvydx) * vy_u
-                    + (dvydz + dvzdy) * lvy * vy_u
-                    + (dvxdz + dvzdx + 2.0 * dvzdz * lvy) * vz_u))
-                / (lalp * lalp);
+        let dvely_dt = dalpdy * (-1.0 + vely * vely) + dvxdy * velx * (-1.0 + vely * vely)
+            - dvzdy * velz
+            + vely
+                * (dvydy * (-1.0 + vely * vely)
+                    + dalpdz * velz
+                    + (dvydz + dvzdy) * vely * velz
+                    + dvzdz * (velz * velz)
+                    + velx * (dalpdx + dvxdx * velx + dvydx * vely + (dvxdz + dvzdx) * velz));
 
-        let dvz_dt = -dalpdz
-            + (lvy * lvy * ((dvxdz + dvzdx) * vx_u + (dvydz + dvzdy) * vy_u + 2.0 * dvzdz * vz_u))
-                / (lalp * lalp)
-            + dvxdz * vx_u * (-1.0 + vz_u * vz_u)
-            + dvydz * vy_u * (-1.0 + vz_u * vz_u)
-            + (lvy
-                * (2.0 * dvxdx * vx_u
-                    + (dvxdy + dvydx) * vy_u
-                    + dvxdz * vz_u
-                    + dvzdx * vz_u
-                    + lvx
-                        * ((dvxdy + dvydx) * vx_u + 2.0 * dvydy * vy_u + (dvydz + dvzdy) * vz_u)))
-                / (lalp * lalp)
-            + vz_u
-                * (dalpdx * vx_u
-                    + dvxdx * (vx_u * vx_u)
-                    + vy_u * (dalpdy + (dvxdy + dvydx) * vx_u + dvydy * vy_u)
-                    + (dalpdz + dvzdx * vx_u + dvzdy * vy_u) * vz_u
-                    + dvzdz * (-1.0 + vz_u * vz_u));
+        let dvelz_dt = -dalpdz - dvxdz * velx - dvydz * vely
+            + (-dvzdz + velx * (dalpdx + dvxdx * velx)) * velz
+            + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely) * velz
+            + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * (velz * velz)
+            + dvzdz * f64::powi(velz, 3);
 
-        let de_dt = -(energy
-            * (dalpdx * vx_u
-                + dvxdx * (vx_u * vx_u)
-                + vy_u * (dalpdy + (dvxdy + dvydx) * vx_u + dvydy * vy_u)
-                + (dalpdz + (dvxdz + dvzdx) * vx_u + (dvydz + dvzdy) * vy_u) * vz_u
-                + dvzdz * (vz_u * vz_u)));
+        let denergy_dt = -(energy
+            * (dalpdx * velx
+                + dvxdx * (velx * velx)
+                + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely)
+                + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * velz
+                + dvzdz * (velz * velz)));
 
-        ParticleState::from_column_slice(&[dx_udt, dy_udt, dz_udt, dvx_dt, dvy_dt, dvz_dt, de_dt])
+        ParticleState::from_column_slice(&[
+            dx_dt, dy_dt, dz_dt, dvelx_dt, dvely_dt, dvelz_dt, denergy_dt,
+        ])
     }
 }
