@@ -16,32 +16,37 @@ pub trait ParticleStateComponents {
     fn vx(&self) -> Self::T;
     fn vy(&self) -> Self::T;
     fn vz(&self) -> Self::T;
+    fn energy(&self) -> Self::T;
 }
 
 impl<T: Copy> ParticleStateComponents for ParticleState<T> {
     type T = T;
 
     fn x(&self) -> Self::T {
-        self[1]
+        self[0]
     }
 
     fn y(&self) -> Self::T {
-        self[2]
+        self[1]
     }
 
     fn z(&self) -> Self::T {
-        self[3]
+        self[2]
     }
 
     fn vx(&self) -> Self::T {
-        self[4]
+        self[3]
     }
 
     fn vy(&self) -> Self::T {
-        self[5]
+        self[4]
     }
 
     fn vz(&self) -> Self::T {
+        self[5]
+    }
+    
+    fn energy(&self) -> Self::T {
         self[6]
     }
 }
