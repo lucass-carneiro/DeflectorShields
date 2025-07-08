@@ -93,6 +93,7 @@ impl WarpDriveOurs {
     pub fn shut_down_now(&mut self) {
         self.u0 = 0.;
         self.k0 = 0.;
+        self.delta_u = 0.;
     }
 
     fn r(&self, q: &nalgebra::Vector4<f64>) -> f64 {
