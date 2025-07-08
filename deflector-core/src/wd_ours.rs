@@ -91,6 +91,7 @@ impl WarpDriveOurs {
     }
     
     pub fn shut_down_now(&mut self) {
+        self.u = 0.;
         self.u0 = 0.;
         self.k0 = 0.;
         self.delta_u = 0.;
