@@ -102,13 +102,12 @@ pub fn make_initial_data<T: WarpDrive>(
     }?;
 
     // Ship
-    let ship_speed = warp_drive.get_bubble_speed() - warp_drive.get_dragging_speed();
     let ship = warp_drive
         .make_normalized_state(
             0.0,
             0.0,
             0.0,
-            ship_speed / f64::sqrt(1.0 - ship_speed * ship_speed),
+            warp_drive.compute_ship_speed().unwrap(),
             0.0,
             0.0,
             &ParticleType::Massive,

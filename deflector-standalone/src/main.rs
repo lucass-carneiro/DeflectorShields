@@ -36,7 +36,7 @@ fn main() {
     let output_file_name = &args[2];
 
     // Deserialize parameter file
-    let mut par = params::read_params(param_file_name).unwrap();
+    let par = params::read_params(param_file_name).unwrap();
 
     // Initialize particle state vectors. The ship is allways the last particle
     let mut states =
@@ -49,11 +49,6 @@ fn main() {
     for i in 0..=num_time_steps {
         let t = (i as f64) * par.time_integration.time_step;
         log::info!("Integrating step {}/{}, t = {}", i, num_time_steps, t);
-
-        // TODO: Temp
-        if i == num_time_steps / 2 {
-            par.warp_drive.k0 = 0.6;
-        }
 
         // Do output
         if (i % par.time_integration.out_every.unwrap_or(1usize)) == 0 {
