@@ -3,7 +3,7 @@ use crate::transition::{cinf, d_cinf_dx};
 use crate::types::{ParticleState, ParticleType};
 use crate::warp_drive::WarpDrive;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct WarpDriveOurs {
     radius: f64,  // Bubble radius
     sigma: f64,   // Bubble transition region width
