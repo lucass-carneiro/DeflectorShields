@@ -1,11 +1,9 @@
-use crate::errors::NormalizationError;
+use crate::errors::{NormalizationError, SlippageError};
 use crate::types::ParticleState;
 use crate::types::ParticleType;
 
 pub trait WarpDrive {
-    fn get_bubble_speed(&self) -> f64;
-
-    fn get_dragging_speed(&self) -> f64;
+    fn compute_ship_speed(&self) -> Result<f64, SlippageError>;
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;

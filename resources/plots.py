@@ -55,7 +55,7 @@ def read_parameter_file(file_path):
         return json.load(file)
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius, sigma, ent_img, follow_bubble, shutdown_t, save_pdf):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_img, follow_bubble, save_pdf):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -76,8 +76,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     ent_y = df.item(3, -1)
 
     # Bubble position
-    bubble_x = bubble_speed * t
-    bubble_y = 0.0
+    bubble_x = ent_x
+    bubble_y = ent_y
 
     plt.close("all")
 
@@ -130,11 +130,10 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     )
 
     # Bubble center
-    if shutdown_t is None or t <= shutdown_t:
-        ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
+    ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
 
-        ax.add_patch(warp_bubble_start)
-        ax.add_patch(warp_bubble_end)
+    ax.add_patch(warp_bubble_start)
+    ax.add_patch(warp_bubble_end)
 
     # Ranges
     range_factor = 5.0
@@ -163,17 +162,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
 def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
     logger.info("Plotting multiple particle data")
 
-    u = parameters["warp_drive"]["u"]
-
     radius = parameters["warp_drive"]["radius"]
     sigma = parameters["warp_drive"]["sigma"]
-
-    shutdown_time = parameters["warp_drive"]["ts"]
-    shutdown_duration = parameters["warp_drive"]["ds"]
-    if shutdown_duration < 0.0:
-        shutdown_t = None
-    else:
-        shutdown_t = shutdown_time + shutdown_duration
 
     anim_folder = f"{prefix}_anim"
 
@@ -196,12 +186,10 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
                 prefix,
                 ipc_file,
                 anim_folder,
-                u,
                 radius,
                 sigma,
                 ent_img,
                 follow_bubble,
-                shutdown_t,
                 save_pdf
             )
 
