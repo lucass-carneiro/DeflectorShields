@@ -89,6 +89,11 @@ impl WarpDriveOurs {
     pub fn update_k0(&mut self, new_k0: f64) {
         self.k0 = new_k0;
     }
+    
+    pub fn shut_down_now(&mut self) {
+        self.u0 = 0.;
+        self.k0 = 0.;
+    }
 
     fn r(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
