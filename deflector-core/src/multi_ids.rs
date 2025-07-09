@@ -102,18 +102,7 @@ pub fn make_initial_data<T: WarpDrive>(
     }?;
 
     // Ship
-    let ship = warp_drive
-        .make_normalized_state(
-            0.0,
-            0.0,
-            0.0,
-            warp_drive.compute_ship_speed().unwrap(),
-            0.0,
-            0.0,
-            &ParticleType::Massive,
-        )
-        .unwrap();
-    states.push(ship);
+    states.push(warp_drive.make_ship_state(0.0).unwrap());
 
     Ok(states)
 }

@@ -1,9 +1,26 @@
-use crate::errors::{NormalizationError, SlippageError};
+use crate::errors::{InitializationError, NormalizationError};
 use crate::types::ParticleState;
 use crate::types::ParticleType;
 
 pub trait WarpDrive {
-    fn compute_ship_speed(&self) -> Result<f64, SlippageError>;
+    fn shut_down(&mut self, t: f64);
+
+    fn shut_up(
+        &mut self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+        restart_parameters: Self,
+    ) -> Result<(), InitializationError>;
+
+    fn get_bubble_position(&self, t: f64) -> f64;
+
+    fn make_ship_state(&self, t: f64) -> Result<ParticleState<f64>, InitializationError>;
+
+    fn update_ship_state(
+        &self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Result<(), InitializationError>;
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
