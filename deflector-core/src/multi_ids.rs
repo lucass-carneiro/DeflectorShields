@@ -30,40 +30,47 @@ fn make_single_particle<T: WarpDrive>(
     Ok(states)
 }
 
-fn make_random_y_stream<T: WarpDrive>(
-    start: f64,
-    length: f64,
-    y_range: f64,
+fn make_debris_field<T: WarpDrive>(
+    x0: f64,
+    width: f64,
+    height: f64,
+    vx_range: f64,
     vy_range: f64,
     num: u64,
-    particle_type: &ParticleType,
     warp_drive: &T,
 ) -> Result<ParticleStates<f64>, NormalizationError> {
     let mut rng = Xoshiro256PlusPlus::from_seed(RNG_SEED);
 
     let mut states: ParticleStates<f64> = Vec::new();
 
-    let abs_length = f64::abs(length);
-    let abs_height = f64::abs(y_range);
+    // We take abs of all parameters to make sure that even negative inputs
+    // will produce correct results
+    let abs_x0 = f64::abs(x0);
+    let abs_width = f64::abs(width);
+    let abs_height = f64::abs(height);
+    let abs_vx = f64::abs(vx_range);
     let abs_vy = f64::abs(vy_range);
 
-    let x0 = start;
-    let xf = start + abs_length;
-    let dx = (xf - x0) / (num as f64);
+    let xf = abs_x0 + abs_width;
 
-    let y0 = -abs_height;
-    let yf = abs_height;
+    let y0 = -abs_height / 2.0;
+    let yf = abs_height / 2.0;
+
+    let vx0 = -abs_vx;
+    let vxf = abs_vx;
 
     let vy0 = -abs_vy;
     let vyf = abs_vy;
 
     // Particles
-    for i in 0..num {
-        let x = x0 + (i as f64) * dx;
+    for _ in 0..num {
+        let x = rng.random_range(x0..=xf);
         let y = rng.random_range(y0..=yf);
+        let vx = rng.random_range(vx0..=vxf);
         let vy = rng.random_range(vy0..=vyf);
 
-        let state = warp_drive.make_normalized_state(x, y, 0.0, 0.0, vy, 0.0, particle_type)?;
+        let state =
+            warp_drive.make_normalized_state(x, y, 0.0, vx, vy, 0.0, &ParticleType::Massive)?;
         states.push(state);
     }
 
@@ -84,21 +91,14 @@ pub fn make_initial_data<T: WarpDrive>(
             vy,
             vz,
         } => make_single_particle(x, y, z, vx, vy, vz, particle_type, warp_drive),
-        InitialData::RandomYStream {
-            start,
-            length,
-            y_range,
+        InitialData::DebrisField {
+            x0,
+            width,
+            height,
+            vx_range,
             vy_range,
             num,
-        } => make_random_y_stream(
-            start,
-            length,
-            y_range,
-            vy_range,
-            num,
-            particle_type,
-            warp_drive,
-        ),
+        } => make_debris_field(x0, width, height, vx_range, vy_range, num, warp_drive),
     }?;
 
     // Ship

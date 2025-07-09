@@ -20,28 +20,14 @@ pub enum InitialData {
         vy: f64,
         vz: f64,
     },
-    RandomYStream {
-        start: f64,
-        length: f64,
-        y_range: f64,
+    DebrisField {
+        x0: f64,
+        width: f64,
+        height: f64,
+        vx_range: f64,
         vy_range: f64,
         num: u64,
-    }, // StaticParticle {
-       //     x: f64,
-       //     y: f64,
-       //     z: f64,
-       // },
-       // StaticWall {
-       //     position: f64,
-       //     extent: f64,
-       //     num: u64,
-       // },
-       // StaticDebrisField {
-       //     start: f64,
-       //     width: f64,
-       //     height: f64,
-       //     num: u64,
-       // },
+    },
 }
 
 #[derive(Debug, serde::Deserialize)]

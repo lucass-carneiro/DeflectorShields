@@ -69,12 +69,28 @@ impl WarpDriveOurs {
 
     pub fn update_u0(
         &mut self,
-        t: f64,
         new_u0: f64,
         old_ship_state: &mut ParticleState<f64>,
     ) -> Result<(), InitializationError> {
         self.u0 = new_u0;
-        self.update_ship_state(t, old_ship_state)
+
+        let slip = self.u - self.u0;
+
+        let vx = slip / f64::sqrt(1.0 - slip * slip);
+
+        let new_ship_state = self.make_normalized_state(
+            old_ship_state[0],
+            0.0,
+            0.0,
+            vx,
+            0.0,
+            0.0,
+            &ParticleType::Massive,
+        )?;
+
+        *old_ship_state = new_ship_state;
+
+        Ok(())
     }
 
     pub fn update_k0(&mut self, new_k0: f64) {
@@ -195,7 +211,7 @@ impl WarpDrive for WarpDriveOurs {
         let vx = slip / f64::sqrt(1.0 - slip * slip);
 
         let new_ship_state = self.make_normalized_state(
-            old_ship_state[0], // TODO: How do we solve this without teleporting?
+            old_ship_state[0],
             0.0,
             0.0,
             vx,
