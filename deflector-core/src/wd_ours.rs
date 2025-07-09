@@ -5,15 +5,15 @@ use crate::warp_drive::WarpDrive;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct WarpDriveOurs {
-    radius: f64,  // Bubble radius
-    sigma: f64,   // Bubble transition region width
-    u: f64,       // Bubble speed
-    u0: f64,      // Dragging speed
-    k0: f64,      // Deflection stength
-    x0: f64,      // Initial bubble position
-    t0: f64,      // Initial bubble time
-    gamma: f64,   // Time dilation strength
-    epsilon: f64, // Machine epsilon
+    pub radius: f64,  // Bubble radius
+    pub sigma: f64,   // Bubble transition region width
+    pub u: f64,       // Bubble speed
+    pub u0: f64,      // Dragging speed
+    pub k0: f64,      // Deflection stength
+    pub x0: f64,      // Initial bubble position
+    pub t0: f64,      // Initial bubble time
+    pub gamma: f64,   // Time dilation strength
+    pub epsilon: f64, // Machine epsilon
 }
 
 impl WarpDriveOurs {
