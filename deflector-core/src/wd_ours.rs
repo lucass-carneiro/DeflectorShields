@@ -60,7 +60,7 @@ impl WarpDriveOurs {
     }
 
     pub fn update_u(&mut self, t: f64, new_u: f64) {
-        self.x0 = self.x0 + self.u * t;
+        self.x0 = self.get_bubble_position(t);
         self.t0 = t;
 
         self.u0 = new_u - self.u + self.u0;
