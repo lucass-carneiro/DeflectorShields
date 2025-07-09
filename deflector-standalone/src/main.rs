@@ -1,6 +1,6 @@
 use std::env;
 
-use deflector_core::{evolve, multi_ids, output, params, warp_drive::WarpDrive, wd_ours};
+use deflector_core::{evolve, multi_ids, output, params};
 
 fn init_logger() {
     use env_logger::{Builder, Env};
