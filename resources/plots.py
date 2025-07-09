@@ -6,10 +6,11 @@ Usage:
   plots.py --version
 
 Options:
-  -h --help           Show this screen.
-  --version           Show version.
-  -b --follow-bubble  Follows the bubble.
-  -s --save-pdf       Saves a PDF file along a regular PNG file
+  -h --help              Show this screen.
+  --version              Show version.
+  -b --follow-bubble     Follows the bubble.
+  --range-factor=<size>  Sets the window size multiplier [default: 3]
+  -s --save-pdf          Saves a PDF file along a regular PNG file
 """
 import logging
 from docopt import docopt
@@ -55,7 +56,7 @@ def read_parameter_file(file_path):
         return json.load(file)
 
 
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_img, follow_bubble, save_pdf):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_img, follow_bubble, save_pdf, range_factor):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
@@ -136,7 +137,6 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_
     ax.add_patch(warp_bubble_end)
 
     # Ranges
-    range_factor = 5.0
     ax.set_ylim(-range_factor * sigma, range_factor * sigma)
 
     if follow_bubble:
@@ -159,7 +159,7 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_
         fig.savefig(anim_file_name_pdf, dpi=300, bbox_inches="tight")
 
 
-def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
+def plot_multiple(prefix, parameters, follow_bubble, save_pdf, range_factor):
     logger.info("Plotting multiple particle data")
 
     radius = parameters["warp_drive"]["radius"]
@@ -190,7 +190,8 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
                 sigma,
                 ent_img,
                 follow_bubble,
-                save_pdf
+                save_pdf,
+                range_factor
             )
 
         logger.info(f"Waiting for plotting jobs to finish")
@@ -222,6 +223,7 @@ def main(args):
     output_file_prefix = args["<data-file-folder>"]
     follow_bubble = bool(args["--follow-bubble"])
     save_pdf = bool(args["--save-pdf"])
+    range_factor = float(args["--range-factor"])
 
     parameters = read_parameter_file(parameter_file)
 
@@ -229,7 +231,8 @@ def main(args):
         output_file_prefix,
         parameters,
         follow_bubble,
-        save_pdf
+        save_pdf,
+        range_factor
     )
 
 

@@ -36,7 +36,7 @@ fn main() {
     let output_file_name = &args[2];
 
     // Deserialize parameter file
-    let par = params::read_params(param_file_name).unwrap();
+    let mut par = params::read_params(param_file_name).unwrap();
 
     // Initialize particle state vectors.
     let mut states =
@@ -49,6 +49,20 @@ fn main() {
     for i in 0..=num_time_steps {
         let t = (i as f64) * par.time_integration.time_step;
         log::info!("Integrating step {}/{}, t = {}", i, num_time_steps, t);
+
+        // TODO tmp
+        let idx = states.len() - 1;
+        if t == 50.0 {
+            par.warp_drive.update_u0(0.9, &mut states[idx]).unwrap();
+        }
+
+        if t == 100.0 {
+            par.warp_drive.update_u0(0.1, &mut states[idx]).unwrap();
+        }
+
+        if t == 150.0 {
+            par.warp_drive.update_u0(0.5, &mut states[idx]).unwrap();
+        }
 
         // Do output
         if (i % par.time_integration.out_every.unwrap_or(1usize)) == 0 {
