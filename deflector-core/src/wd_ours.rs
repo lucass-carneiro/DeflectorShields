@@ -169,7 +169,7 @@ impl WarpDrive for WarpDriveOurs {
         &mut self,
         t: f64,
         old_ship_state: &mut ParticleState<f64>,
-        restart_parameters: Self,
+        restart_parameters: &Self,
     ) -> Result<(), InitializationError> {
         self.radius = restart_parameters.get_radius();
         self.sigma = restart_parameters.get_sigma();
