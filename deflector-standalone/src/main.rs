@@ -1,6 +1,6 @@
 use std::env;
 
-use deflector_core::{evolve, multi_ids, output, params};
+use deflector_core::{evolve, multi_ids, output, params, warp_drive::WarpDrive, wd_ours};
 
 fn init_logger() {
     use env_logger::{Builder, Env};
@@ -38,7 +38,7 @@ fn main() {
     // Deserialize parameter file
     let par = params::read_params(param_file_name).unwrap();
 
-    // Initialize particle state vectors. The ship is allways the last particle
+    // Initialize particle state vectors.
     let mut states =
         multi_ids::make_initial_data(par.initial_data, &par.normalize_as, &par.warp_drive).unwrap();
 

@@ -10,7 +10,8 @@ pub struct WarpDriveOurs {
     u: f64,       // Bubble speed
     u0: f64,      // Dragging speed
     k0: f64,      // Deflection stength
-    delta_u: f64, // TODO
+    x0: f64,      // Initial bubble position
+    t0: f64,      // Initial bubble time
     gamma: f64,   // Time dilation strength
     epsilon: f64, // Machine epsilon
 }
@@ -23,7 +24,8 @@ impl WarpDriveOurs {
             u: u,
             u0: u0,
             k0: k0,
-            delta_u: 0.0,
+            x0: 0.0,
+            t0: 0.0,
             gamma: 0.0,
             epsilon: 1.0e-12,
         }
@@ -58,52 +60,34 @@ impl WarpDriveOurs {
     }
 
     pub fn update_u(&mut self, t: f64, new_u: f64) {
-        let udiff = new_u - self.u;
-        self.delta_u = udiff * t + self.delta_u;
+        self.x0 = self.x0 + self.u * t;
+        self.t0 = t;
+
+        self.u0 = new_u - self.u + self.u0;
         self.u = new_u;
-        self.u0 += udiff;
     }
 
     pub fn update_u0(
         &mut self,
+        t: f64,
         new_u0: f64,
-        old_ship_state: &ParticleState<f64>,
-    ) -> Result<ParticleState<f64>, InitializationError> {
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Result<(), InitializationError> {
         self.u0 = new_u0;
-
-        let new_ship_speed = self.compute_ship_speed()?;
-
-        let new_state = self.make_normalized_state(
-            old_ship_state[0],
-            old_ship_state[1],
-            old_ship_state[2],
-            new_ship_speed,
-            old_ship_state[4],
-            old_ship_state[5],
-            &ParticleType::Massive,
-        )?;
-
-        Ok(new_state)
+        self.update_ship_state(t, old_ship_state)
     }
 
     pub fn update_k0(&mut self, new_k0: f64) {
         self.k0 = new_k0;
     }
-    
-    pub fn shut_down_now(&mut self) {
-        self.u = 0.;
-        self.u0 = 0.;
-        self.k0 = 0.;
-        self.delta_u = 0.;
-    }
 
     fn r(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
+        let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         f64::sqrt(
             self.epsilon
-                + (self.delta_u - t * self.u + x) * (self.delta_u - t * self.u + x)
                 + y * y
-                + z * z,
+                + z * z
+                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
         )
     }
 
@@ -118,33 +102,33 @@ impl WarpDriveOurs {
     }
 
     fn d_r_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
-        (self.delta_u - t * self.u + x)
+        let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
+        (x - self.get_bubble_position(t))
             / f64::sqrt(
                 self.epsilon
-                    + (self.delta_u - t * self.u + x) * (self.delta_u - t * self.u + x)
                     + y * y
-                    + z * z,
+                    + z * z
+                    + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
             )
     }
 
     fn d_r_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
+        let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         y / f64::sqrt(
             self.epsilon
-                + (self.delta_u - t * self.u + x) * (self.delta_u - t * self.u + x)
                 + y * y
-                + z * z,
+                + z * z
+                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
         )
     }
 
     fn d_r_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (t, x, y, z) = (&q[0], &q[1], &q[2], &q[3]);
+        let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         z / f64::sqrt(
             self.epsilon
-                + (self.delta_u - t * self.u + x) * (self.delta_u - t * self.u + x)
                 + y * y
-                + z * z,
+                + z * z
+                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
         )
     }
 
@@ -172,16 +156,94 @@ impl WarpDriveOurs {
 }
 
 impl WarpDrive for WarpDriveOurs {
-    fn compute_ship_speed(&self) -> Result<f64, SlippageError> {
+    fn shut_down(&mut self, t: f64) {
+        self.update_u(t, 0.0);
+
+        // We don't call update_u0 because we want to preserve slippage
+        self.u0 = 0.0;
+
+        self.update_k0(0.0);
+    }
+
+    fn shut_up(
+        &mut self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+        restart_parameters: Self,
+    ) -> Result<(), InitializationError> {
+        self.radius = restart_parameters.get_radius();
+        self.sigma = restart_parameters.get_sigma();
+        self.u = restart_parameters.get_u();
+        self.u0 = restart_parameters.get_u0();
+        self.k0 = restart_parameters.get_k0();
+
+        // We force the position of the bubble to be where the ship is.
+        // This is required because slippage can cause the ship to go back
+        self.x0 = old_ship_state[0];
+        self.t0 = t;
+
+        // Compute the new ship state
         let slip = self.u - self.u0;
+
         if slip > 1.0 {
-            Err(SlippageError {
+            return Err(InitializationError::from(SlippageError {
                 u: self.u,
                 u0: self.u0,
-            })
-        } else {
-            Ok(slip / f64::sqrt(1.0 - slip * slip))
+            }));
         }
+
+        let vx = slip / f64::sqrt(1.0 - slip * slip);
+
+        let new_ship_state = self.make_normalized_state(
+            old_ship_state[0], // TODO: How do we solve this without teleporting?
+            0.0,
+            0.0,
+            vx,
+            0.0,
+            0.0,
+            &ParticleType::Massive,
+        )?;
+
+        *old_ship_state = new_ship_state;
+
+        Ok(())
+    }
+
+    fn get_bubble_position(&self, t: f64) -> f64 {
+        self.x0 + self.u * (t - self.t0)
+    }
+
+    fn make_ship_state(&self, t: f64) -> Result<ParticleState<f64>, InitializationError> {
+        let slip = self.u - self.u0;
+
+        if slip > 1.0 {
+            return Err(InitializationError::from(SlippageError {
+                u: self.u,
+                u0: self.u0,
+            }));
+        }
+
+        let vx = slip / f64::sqrt(1.0 - slip * slip);
+
+        Ok(self.make_normalized_state(
+            self.get_bubble_position(t),
+            0.0,
+            0.0,
+            vx,
+            0.0,
+            0.0,
+            &ParticleType::Massive,
+        )?)
+    }
+
+    fn update_ship_state(
+        &self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Result<(), InitializationError> {
+        let new_ship_state = self.make_ship_state(t)?;
+        *old_ship_state = new_ship_state;
+        Ok(())
     }
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
