@@ -1,5 +1,6 @@
 use crate::types::ParticleType;
 
+#[cfg(feature = "jason_parfiles")]
 #[derive(thiserror::Error, Debug)]
 pub enum ParamError {
     #[error("Unable to read parameter file \"{file_name}\": {io_error}")]
