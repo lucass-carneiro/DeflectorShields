@@ -74,9 +74,7 @@ impl WarpDriveOurs {
     ) -> Result<(), InitializationError> {
         self.u0 = new_u0;
 
-        let slip = self.u - self.u0;
-
-        let vx = slip / f64::sqrt(1.0 - slip * slip);
+        let vx = self.u - self.u0;
 
         let new_ship_state = self.make_normalized_state(
             old_ship_state[0],
@@ -199,16 +197,14 @@ impl WarpDrive for WarpDriveOurs {
         self.t0 = t;
 
         // Compute the new ship state
-        let slip = self.u - self.u0;
+        let vx = self.u - self.u0;
 
-        if slip > 1.0 {
+        if vx > 1.0 {
             return Err(InitializationError::from(SlippageError {
                 u: self.u,
                 u0: self.u0,
             }));
         }
-
-        let vx = slip / f64::sqrt(1.0 - slip * slip);
 
         let new_ship_state = self.make_normalized_state(
             old_ship_state[0],
