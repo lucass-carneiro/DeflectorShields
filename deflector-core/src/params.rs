@@ -4,51 +4,38 @@ use crate::types::ParticleType;
 use crate::wd_ours::WarpDriveOurs;
 
 #[derive(Debug, serde::Deserialize)]
-pub struct AffineData {
-    pub lambda_max: f64,
-    pub dlambda: f64,
+pub struct TimeData {
+    pub final_time: f64,
+    pub time_step: f64,
     pub out_every: Option<usize>,
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub enum MultiParticleID {
+pub enum InitialData {
     SingleParticle {
         x: f64,
         y: f64,
         z: f64,
-        px: f64,
-        py: f64,
-        pz: f64,
+        vx: f64,
+        vy: f64,
+        vz: f64,
     },
-    StaticParticle {
-        x: f64,
-        y: f64,
-        z: f64,
-    },
-    StaticWall {
-        position: f64,
-        extent: f64,
-        num: u64,
-    },
-    StaticDebrisField {
-        start: f64,
+    DebrisField {
+        x0: f64,
         width: f64,
         height: f64,
+        vx_range: f64,
+        vy_range: f64,
         num: u64,
     },
-}
-
-#[derive(Debug, serde::Deserialize)]
-pub enum WarpDriveSolution {
-    Ours(WarpDriveOurs),
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct Params {
-    pub warp_drive_solution: WarpDriveSolution,
+    pub warp_drive: WarpDriveOurs,
     pub normalize_as: ParticleType,
-    pub affine_data: AffineData,
-    pub multi_particle_id: MultiParticleID,
+    pub time_integration: TimeData,
+    pub initial_data: InitialData,
 }
 
 pub fn read_params(file_name: &str) -> Result<Params, ParamError> {

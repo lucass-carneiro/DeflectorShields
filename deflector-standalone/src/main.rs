@@ -1,6 +1,6 @@
 use std::env;
 
-use deflector_core::{evolve, multi_ids, output, params, warp_drive::WarpDrive};
+use deflector_core::{evolve, multi_ids, output, params};
 
 fn init_logger() {
     use env_logger::{Builder, Env};
@@ -36,42 +36,46 @@ fn main() {
     let output_file_name = &args[2];
 
     // Deserialize parameter file
-    let par = params::read_params(param_file_name).unwrap();
+    let mut par = params::read_params(param_file_name).unwrap();
 
-    // Get warp drive solution to use
-    let warp_drive_solution: Box<dyn WarpDrive> = match par.warp_drive_solution {
-        params::WarpDriveSolution::Ours(sol) => {
-            log::info!("Using our warp drive");
-            Box::new(sol)
-        }
-    };
-
-    // Initialize particle state vectors. The ship is allways the last particle
-    let mut states = multi_ids::make_multi_id(
-        par.multi_particle_id,
-        &par.normalize_as,
-        &warp_drive_solution,
-    )
-    .unwrap();
+    // Initialize particle state vectors.
+    let mut states =
+        multi_ids::make_initial_data(par.initial_data, &par.normalize_as, &par.warp_drive).unwrap();
 
     // Compute the number of time steps
-    let nlambda = (par.affine_data.lambda_max / par.affine_data.dlambda) as usize;
+    let num_time_steps =
+        (par.time_integration.final_time / par.time_integration.time_step) as usize;
 
-    for i in 0..=nlambda {
-        let lambda = (i as f64) * par.affine_data.dlambda;
-        log::info!("Integrating step {}/{}, lambda = {}", i, nlambda, lambda);
+    for i in 0..=num_time_steps {
+        let t = (i as f64) * par.time_integration.time_step;
+        log::info!("Integrating step {}/{}, t = {}", i, num_time_steps, t);
+
+        // TODO tmp
+        let idx = states.len() - 1;
+        if t == 50.0 {
+            par.warp_drive.update_u0(0.9, &mut states[idx]).unwrap();
+        }
+
+        if t == 100.0 {
+            par.warp_drive.update_u0(0.1, &mut states[idx]).unwrap();
+        }
+
+        if t == 150.0 {
+            par.warp_drive.update_u0(0.5, &mut states[idx]).unwrap();
+        }
 
         // Do output
-        if (i % par.affine_data.out_every.unwrap_or(1usize)) == 0 {
+        if (i % par.time_integration.out_every.unwrap_or(1usize)) == 0 {
             let mut out_file = output::IpcMultiFile::new();
 
             // Loop over particles
             for particle_idx in 0..states.len() {
-                out_file.append(particle_idx, i, lambda, &states[particle_idx]);
+                out_file.append(particle_idx, i, t, &states[particle_idx]);
 
-                evolve::rk4_step_dyn(
-                    par.affine_data.dlambda,
-                    &warp_drive_solution,
+                evolve::rk4_step(
+                    t,
+                    par.time_integration.time_step,
+                    &par.warp_drive,
                     &mut states[particle_idx],
                 );
             }
@@ -80,9 +84,10 @@ fn main() {
         } else {
             // Loop over particles
             for particle_idx in 0..states.len() {
-                evolve::rk4_step_dyn(
-                    par.affine_data.dlambda,
-                    &warp_drive_solution,
+                evolve::rk4_step(
+                    t,
+                    par.time_integration.time_step,
+                    &par.warp_drive,
                     &mut states[particle_idx],
                 );
             }

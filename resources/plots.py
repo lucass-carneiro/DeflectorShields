@@ -6,10 +6,11 @@ Usage:
   plots.py --version
 
 Options:
-  -h --help           Show this screen.
-  --version           Show version.
-  -b --follow-bubble  Follows the bubble.
-  -s --save-pdf       Saves a PDF file along a regular PNG file
+  -h --help              Show this screen.
+  --version              Show version.
+  -b --follow-bubble     Follows the bubble.
+  --range-factor=<size>  Sets the window size multiplier [default: 3]
+  -s --save-pdf          Saves a PDF file along a regular PNG file
 """
 import logging
 from docopt import docopt
@@ -55,20 +56,11 @@ def read_parameter_file(file_path):
         return json.load(file)
 
 
-def alcubierre_r(v, t, x, y, z):
-    return np.sqrt((x - v*t)**2 + y**2 + z**2)
-
-
-def alcubierre_f(v, sigma, radius, t, x, y, z):
-    r = alcubierre_r(v, t, x, y, z)
-    return (np.tanh(sigma * (r + radius)) - np.tanh(sigma * (r - radius)))/(2.0 * np.tanh(sigma * radius))
-
-
-def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radius, sigma, ent_img, follow_bubble, shutdown_t, save_pdf):
+def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_img, follow_bubble, save_pdf, range_factor):
     ipc_file = os.path.join(prefix, ipc_file_name)
     df = pl.read_ipc(ipc_file, memory_map=False)
 
-    it = int(df.item(0, 0))
+    it = int(df.item(0, -1))
     anim_file_name = os.path.join(anim_folder, f"{prefix}_{it:08d}.png")
 
     if save_pdf:
@@ -78,11 +70,11 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
         )
 
     # Current time
-    t = df.item(2, -1)
+    t = df.item(1, -1)
 
     # Ship position
-    ent_x = df.item(3, -1)
-    ent_y = df.item(4, -1)
+    ent_x = df.item(2, -1)
+    ent_y = df.item(3, -1)
 
     # Bubble position
     bubble_x = ent_x
@@ -111,8 +103,8 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
 
     # Particles
     for i in range(0, len(df.columns) - 1):
-        x = df.item(3, i)
-        y = df.item(4, i)
+        x = df.item(2, i)
+        y = df.item(3, i)
         ax.scatter(x, y, marker="o", color="tab:red", s=2)
 
     ax.set_xlabel(r"$x$")
@@ -139,14 +131,12 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     )
 
     # Bubble center
-    if shutdown_t is None or t <= shutdown_t:
-        ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
+    ax.scatter(bubble_x, bubble_y, marker="o", color="black", s=2)
 
-        ax.add_patch(warp_bubble_start)
-        ax.add_patch(warp_bubble_end)
+    ax.add_patch(warp_bubble_start)
+    ax.add_patch(warp_bubble_end)
 
     # Ranges
-    range_factor = 5.0
     ax.set_ylim(-range_factor * sigma, range_factor * sigma)
 
     if follow_bubble:
@@ -163,38 +153,17 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, bubble_speed, radiu
     # Save figure
     fig.tight_layout()
 
-    fig.savefig(anim_file_name, dpi=300, bbox_inches="tight")
+    fig.savefig(anim_file_name, dpi=300)
 
     if save_pdf:
         fig.savefig(anim_file_name_pdf, dpi=300, bbox_inches="tight")
 
 
-def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
+def plot_multiple(prefix, parameters, follow_bubble, save_pdf, range_factor):
     logger.info("Plotting multiple particle data")
 
-    if "Ours" in parameters["warp_drive_solution"]:
-        u = parameters["warp_drive_solution"]["Ours"]["u"]
-
-        radius = parameters["warp_drive_solution"]["Ours"]["radius"]
-        sigma = parameters["warp_drive_solution"]["Ours"]["sigma"]
-
-        shutdown_time = parameters["warp_drive_solution"]["Ours"]["ts"]
-        shutdown_duration = parameters["warp_drive_solution"]["Ours"]["ds"]
-        if shutdown_duration < 0.0:
-            shutdown_t = None
-        else:
-            shutdown_t = shutdown_time + shutdown_duration
-    elif "Natario" in parameters["warp_drive_solution"]:
-        u = parameters["warp_drive_solution"]["Natario"]["u"]
-
-        radius = parameters["warp_drive_solution"]["Natario"]["radius"]
-        sigma = parameters["warp_drive_solution"]["Natario"]["sigma"]
-
-        shutdown_t = None
-    else:
-        raise RuntimeError(
-            f"Parameter retrival not implemented for this warp drive"
-        )
+    radius = parameters["warp_drive"]["radius"]
+    sigma = parameters["warp_drive"]["sigma"]
 
     anim_folder = f"{prefix}_anim"
 
@@ -217,13 +186,12 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf):
                 prefix,
                 ipc_file,
                 anim_folder,
-                u,
                 radius,
                 sigma,
                 ent_img,
                 follow_bubble,
-                shutdown_t,
-                save_pdf
+                save_pdf,
+                range_factor
             )
 
         logger.info(f"Waiting for plotting jobs to finish")
@@ -255,6 +223,7 @@ def main(args):
     output_file_prefix = args["<data-file-folder>"]
     follow_bubble = bool(args["--follow-bubble"])
     save_pdf = bool(args["--save-pdf"])
+    range_factor = float(args["--range-factor"])
 
     parameters = read_parameter_file(parameter_file)
 
@@ -262,7 +231,8 @@ def main(args):
         output_file_prefix,
         parameters,
         follow_bubble,
-        save_pdf
+        save_pdf,
+        range_factor
     )
 
 
