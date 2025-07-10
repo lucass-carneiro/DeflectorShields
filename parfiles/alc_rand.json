@@ -19,7 +19,7 @@
     "initial_data": {
         "DebrisField": {
             "x0": 9.0,
-            "width": 5.0,
+            "width": 20.0,
             "height": 20.0,
             "vx_range": 0.01,
             "vy_range": 0.01,

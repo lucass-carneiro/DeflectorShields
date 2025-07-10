@@ -7,10 +7,14 @@ edition = "2024"
 env_logger = "0.11.8"
 log = "0.4.27"
 nalgebra = "0.33.2"
-polars = { version = "0.46.0", features = ["ipc"] }
-polars-io = "0.46.0"
+polars = { version = "0.46.0", features = ["ipc"], optional = true }
+polars-io = { version = "0.46.0", optional = true}
 rand = "0.9.1"
 rand_xoshiro = "0.7.0"
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.140"
+serde = { version = "1.0.219", features = ["derive"], optional = true }
+serde_json = { version = "1.0.140", optional = true}
 thiserror = "2.0.12"
+
+[features]
+jason_parfiles = ["serde", "serde_json"]
+output_polars = ["polars", "polars-io"]

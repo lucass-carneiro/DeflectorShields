@@ -1,7 +1,8 @@
 pub type ParticleState<T> = nalgebra::SVector<T, 7>;
 pub type ParticleStates<T> = Vec<ParticleState<T>>;
 
-#[derive(Clone, Copy, Debug, serde::Deserialize)]
+#[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "jason_parfiles", derive(serde::Deserialize))]
 pub enum ParticleType {
     Massive,
     Photon,
@@ -45,7 +46,7 @@ impl<T: Copy> ParticleStateComponents for ParticleState<T> {
     fn vz(&self) -> Self::T {
         self[5]
     }
-    
+
     fn energy(&self) -> Self::T {
         self[6]
     }

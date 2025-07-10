@@ -1,5 +1,8 @@
 use crate::errors::NormalizationError;
+
+#[cfg(feature = "jason_parfiles")]
 use crate::params::InitialData;
+
 use crate::types::{ParticleStates, ParticleType};
 use crate::warp_drive::WarpDrive;
 
@@ -12,7 +15,7 @@ const RNG_SEED: [u8; 32] = [
     27, 28, 29, 30, 31, 32,
 ];
 
-fn make_single_particle<T: WarpDrive>(
+pub fn make_single_particle<T: WarpDrive>(
     x: f64,
     y: f64,
     z: f64,
@@ -30,7 +33,7 @@ fn make_single_particle<T: WarpDrive>(
     Ok(states)
 }
 
-fn make_debris_field<T: WarpDrive>(
+pub fn make_debris_field<T: WarpDrive>(
     x0: f64,
     width: f64,
     height: f64,
@@ -77,6 +80,7 @@ fn make_debris_field<T: WarpDrive>(
     Ok(states)
 }
 
+#[cfg(feature = "jason_parfiles")]
 pub fn make_initial_data<T: WarpDrive>(
     id: InitialData,
     particle_type: &ParticleType,
