@@ -22,7 +22,7 @@ def R(x, y0, x0, dx):
     x1 = x0 - x
     num = y0 * dx * (2.0 * x1**2 + 2.0 * x1 * dx + dx**2)
     den = 4.0 * x1**2 * (x1 + dx)**2
-    return num / den
+    return -num / den
 
 
 def f(x, y0, x0, dx):
@@ -62,9 +62,11 @@ def plot_f():
         x,
         np.vectorize(dfdx)(x, y0, x0, dx),
         color="tab:red",
-        linestyle="--",
         label=r"$f^\prime(x;\, y_0, x_0, \Delta_x)$"
     )
+
+    plt.axvline(x=x0, color="tab:blue",  linestyle='--')
+    plt.axvline(x=x0 + dx, color="tab:blue",  linestyle='--')
     
     plt.xlabel(r"$x$")
     plt.ylabel(r"$y$")

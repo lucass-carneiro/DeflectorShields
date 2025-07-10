@@ -16,14 +16,38 @@ pub enum ParamError {
 }
 
 #[derive(thiserror::Error, Debug)]
-#[error("State q = ({t}, {x}, {y}, {z}) p = (?, {px}, {py}, {pz}) is not normalizable")]
+#[error("State x = ({x}, {y}, {z}) v = (?, {vx}, {vy}, {vz}) is not normalizable")]
 pub struct NormalizationError {
     pub particle_type: ParticleType,
-    pub t: f64,
     pub x: f64,
     pub y: f64,
     pub z: f64,
-    pub px: f64,
-    pub py: f64,
-    pub pz: f64,
+    pub vx: f64,
+    pub vy: f64,
+    pub vz: f64,
+}
+
+#[derive(thiserror::Error, Debug)]
+#[error("Unable to normalize slippage with bubble speed {u} and dragging speed {u0}")]
+pub struct SlippageError {
+    pub u: f64,
+    pub u0: f64,
+}
+
+#[derive(Debug)]
+pub enum InitializationError {
+    Normalization(NormalizationError),
+    Slippage(SlippageError),
+}
+
+impl From<NormalizationError> for InitializationError {
+    fn from(err: NormalizationError) -> InitializationError {
+        InitializationError::Normalization(err)
+    }
+}
+
+impl From<SlippageError> for InitializationError {
+    fn from(err: SlippageError) -> InitializationError {
+        InitializationError::Slippage(err)
+    }
 }
