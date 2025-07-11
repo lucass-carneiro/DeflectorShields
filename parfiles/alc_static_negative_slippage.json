@@ -1,0 +1,29 @@
+{
+    "warp_drive": {
+        "radius": 4.0,
+        "sigma": 4.0,
+        "u": 0.25,
+        "u0": 0.5,
+        "k0": 0.0,
+        "x0": 0.0,
+        "t0": 0.0,
+        "gamma": 0.0,
+        "epsilon": 1.0e-12
+    },
+    "normalize_as": "Massive",
+    "time_integration": {
+        "final_time": 150.0,
+        "time_step": 0.1,
+        "out_every": 10
+    },
+    "initial_data": {
+        "DebrisField": {
+            "x0": 9.0,
+            "width": 5.0,
+            "height": 20.0,
+            "vx_range": 0.0,
+            "vy_range": 0.0,
+            "num": 1000
+        }
+    }
+}

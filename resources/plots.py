@@ -179,7 +179,7 @@ def plot_multiple(prefix, parameters, follow_bubble, save_pdf, range_factor):
     # for every file
     logger.info(f"Submitting plotting jobs to pool")
 
-    with ccf.ProcessPoolExecutor(max_workers=8) as executor:
+    with ccf.ProcessPoolExecutor(max_workers=16) as executor:
         for ipc_file in ipc_file_list:
             executor.submit(
                 plot_multiple_kernel,
