@@ -1,3 +1,4 @@
+pub mod debug;
 pub mod errors;
 pub mod evolve;
 pub mod multi_ids;
