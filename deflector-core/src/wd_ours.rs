@@ -1,5 +1,5 @@
 use crate::errors::{InitializationError, SlippageError};
-use crate::transition::{cinf, d_cinf_dx};
+use crate::transition::{d_poly_trans_dx, poly_trans};
 use crate::types::{ParticleState, ParticleType};
 use crate::warp_drive::WarpDrive;
 
@@ -100,30 +100,28 @@ impl WarpDriveOurs {
         let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         f64::sqrt(
             self.epsilon
-                + y * y
-                + z * z
-                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
+                + f64::powi(y, 2)
+                + f64::powi(z, 2)
+                + f64::powi(x - self.get_bubble_position(t), 2),
         )
     }
 
     fn rho_y(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        y / f64::sqrt(y * y + z * z + self.epsilon)
+        let (y, z) = (q[2], q[3]);
+        y / f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2))
     }
 
     fn rho_z(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        z / f64::sqrt(y * y + z * z + self.epsilon)
+        let (y, z) = (q[2], q[3]);
+        z / f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2))
     }
 
     fn d_r_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
-        (x - self.get_bubble_position(t))
+        let bubble_pos = self.get_bubble_position(t);
+        (x - bubble_pos)
             / f64::sqrt(
-                self.epsilon
-                    + y * y
-                    + z * z
-                    + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
+                self.epsilon + f64::powi(y, 2) + f64::powi(z, 2) + f64::powi(x - bubble_pos, 2),
             )
     }
 
@@ -131,9 +129,9 @@ impl WarpDriveOurs {
         let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         y / f64::sqrt(
             self.epsilon
-                + y * y
-                + z * z
-                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
+                + f64::powi(y, 2)
+                + f64::powi(z, 2)
+                + f64::powi(x - self.get_bubble_position(t), 2),
         )
     }
 
@@ -141,32 +139,46 @@ impl WarpDriveOurs {
         let (t, x, y, z) = (q[0], q[1], q[2], q[3]);
         z / f64::sqrt(
             self.epsilon
-                + y * y
-                + z * z
-                + (x - self.get_bubble_position(t)) * (x - self.get_bubble_position(t)),
+                + f64::powi(y, 2)
+                + f64::powi(z, 2)
+                + f64::powi(x - self.get_bubble_position(t), 2),
         )
     }
 
     fn d_rho_y_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        (self.epsilon + z * z)
-            / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z))
+        let (y, z) = (q[2], q[3]);
+        (self.epsilon + f64::powi(z, 2))
+            / f64::powi(
+                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+                3,
+            )
     }
 
     fn d_rho_y_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        -((y * z) / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z)))
+        let (y, z) = (q[2], q[3]);
+        -((y * z)
+            / f64::powi(
+                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+                3,
+            ))
     }
 
     fn d_rho_z_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        -((y * z) / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z)))
+        let (y, z) = (q[2], q[3]);
+        -((y * z)
+            / f64::powi(
+                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+                3,
+            ))
     }
 
     fn d_rho_z_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (&q[2], &q[3]);
-        (self.epsilon + y * y)
-            / ((self.epsilon + y * y + z * z) * f64::sqrt(self.epsilon + y * y + z * z))
+        let (y, z) = (q[2], q[3]);
+        (self.epsilon + f64::powi(y, 2))
+            / f64::powi(
+                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+                3,
+            )
     }
 }
 
@@ -262,7 +274,7 @@ impl WarpDrive for WarpDriveOurs {
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
         self.u0 * f
     }
@@ -271,7 +283,7 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let lrho = self.rho_y(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
         self.k0 * lrho * f
     }
@@ -280,7 +292,7 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let lrho = self.rho_z(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
         self.k0 * lrho * f
     }
@@ -289,7 +301,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdx = self.d_r_dx(&q);
 
         self.u0 * dfdr * drdx
@@ -298,7 +310,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_vx_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdy = self.d_r_dy(&q);
 
         self.u0 * dfdr * drdy
@@ -307,7 +319,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_vx_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdz = self.d_r_dz(&q);
 
         self.u0 * dfdr * drdz
@@ -318,7 +330,7 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let rhoy = self.rho_y(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdx = self.d_r_dx(&q);
 
         self.k0 * rhoy * dfdr * drdx
@@ -330,9 +342,9 @@ impl WarpDrive for WarpDriveOurs {
         let rhoy = self.rho_y(&q);
         let drhoydy = self.d_rho_y_dy(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdy = self.d_r_dy(&q);
 
         self.k0 * (drhoydy * f + rhoy * dfdr * drdy)
@@ -344,9 +356,9 @@ impl WarpDrive for WarpDriveOurs {
         let rhoy = self.rho_y(&q);
         let drhoydz = self.d_rho_y_dz(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdz = self.d_r_dz(&q);
 
         self.k0 * (drhoydz * f + rhoy * dfdr * drdz)
@@ -357,7 +369,7 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let rhoz = self.rho_z(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdx = self.d_r_dx(&q);
 
         self.k0 * rhoz * dfdr * drdx
@@ -369,9 +381,9 @@ impl WarpDrive for WarpDriveOurs {
         let rhoz = self.rho_z(&q);
         let drhozdy = self.d_rho_z_dy(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdy = self.d_r_dy(&q);
 
         self.k0 * (drhozdy * f + rhoz * dfdr * drdy)
@@ -383,9 +395,9 @@ impl WarpDrive for WarpDriveOurs {
         let rhoz = self.rho_z(&q);
         let drhozdz = self.d_rho_z_dz(&q);
 
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdz = self.d_r_dz(&q);
 
         self.k0 * (drhozdz * f + rhoz * dfdr * drdz)
@@ -393,7 +405,7 @@ impl WarpDrive for WarpDriveOurs {
 
     fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-        let f = cinf(lr, 1.0, self.radius, self.sigma);
+        let f = poly_trans(lr, 1.0, self.radius, self.sigma);
 
         1.0 - self.gamma * f
     }
@@ -401,7 +413,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_alp_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdx = self.d_r_dx(&q);
 
         -self.gamma * dfdr * drdx
@@ -410,7 +422,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_alp_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdy = self.d_r_dy(&q);
 
         -self.gamma * dfdr * drdy
@@ -419,7 +431,7 @@ impl WarpDrive for WarpDriveOurs {
     fn d_alp_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
 
-        let dfdr = d_cinf_dx(lr, 1.0, self.radius, self.sigma);
+        let dfdr = d_poly_trans_dx(lr, 1.0, self.radius, self.sigma);
         let drdz = self.d_r_dz(&q);
 
         -self.gamma * dfdr * drdz

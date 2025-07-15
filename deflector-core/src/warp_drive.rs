@@ -113,34 +113,35 @@ pub trait WarpDrive {
 
         let dz_dt = lvz + lalp * velz;
 
-        let dvelx_dt = dalpdx * (-1.0 + velx * velx) - dvydx * vely - dvzdx * velz
+        let dvelx_dt = dalpdx * (-1.0 + f64::powi(velx, 2)) - dvydx * vely - dvzdx * velz
             + velx
-                * (dvxdx * (-1.0 + velx * velx)
+                * (dvxdx * (-1.0 + f64::powi(velx, 2))
                     + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely)
                     + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * velz
-                    + dvzdz * (velz * velz));
+                    + dvzdz * f64::powi(velz, 2));
 
-        let dvely_dt = dalpdy * (-1.0 + vely * vely) + dvxdy * velx * (-1.0 + vely * vely)
+        let dvely_dt = dalpdy * (-1.0 + f64::powi(vely, 2))
+            + dvxdy * velx * (-1.0 + f64::powi(vely, 2))
             - dvzdy * velz
             + vely
-                * (dvydy * (-1.0 + vely * vely)
+                * (dvydy * (-1.0 + f64::powi(vely, 2))
                     + dalpdz * velz
                     + (dvydz + dvzdy) * vely * velz
-                    + dvzdz * (velz * velz)
+                    + dvzdz * f64::powi(velz, 2)
                     + velx * (dalpdx + dvxdx * velx + dvydx * vely + (dvxdz + dvzdx) * velz));
 
         let dvelz_dt = -dalpdz - dvxdz * velx - dvydz * vely
             + (-dvzdz + velx * (dalpdx + dvxdx * velx)) * velz
             + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely) * velz
-            + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * (velz * velz)
+            + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * f64::powi(velz, 2)
             + dvzdz * f64::powi(velz, 3);
 
         let denergy_dt = -(energy
             * (dalpdx * velx
-                + dvxdx * (velx * velx)
+                + dvxdx * f64::powi(velx, 2)
                 + vely * (dalpdy + (dvxdy + dvydx) * velx + dvydy * vely)
                 + (dalpdz + (dvxdz + dvzdx) * velx + (dvydz + dvzdy) * vely) * velz
-                + dvzdz * (velz * velz)));
+                + dvzdz * f64::powi(velz, 2)));
 
         ParticleState::from_column_slice(&[
             dx_dt, dy_dt, dz_dt, dvelx_dt, dvely_dt, dvelz_dt, denergy_dt,
