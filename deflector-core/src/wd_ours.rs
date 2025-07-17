@@ -305,21 +305,25 @@ impl WarpDrive for WarpDriveOurs {
     }
 
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let radius_plus_sigma = self.radius + self.sigma;
+
         let lr = self.r(&q);
         let rhoy = self.rho_y(&q);
 
-        let fa = trans(lr - self.radius, 1.0, 0.0, self.sigma);
-        let fb = trans(self.radius - lr, 1.0, 0.0, self.sigma);
+        let fa = trans(lr - radius_plus_sigma, 1.0, 0.0, self.sigma);
+        let fb = trans(radius_plus_sigma - lr, 1.0, 0.0, self.sigma);
 
         self.k0 * rhoy * fa * fb
     }
 
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let radius_plus_sigma = self.radius + self.sigma;
+
         let lr = self.r(&q);
         let rhoz = self.rho_z(&q);
 
-        let fa = trans(lr - self.radius, 1.0, 0.0, self.sigma);
-        let fb = trans(self.radius - lr, 1.0, 0.0, self.sigma);
+        let fa = trans(lr - radius_plus_sigma, 1.0, 0.0, self.sigma);
+        let fb = trans(radius_plus_sigma - lr, 1.0, 0.0, self.sigma);
 
         self.k0 * rhoz * fa * fb
     }
