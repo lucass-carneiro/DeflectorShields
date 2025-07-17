@@ -308,8 +308,8 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let rhoy = self.rho_y(&q);
 
-        let fa = trans(lr - self.radius, 1.0, self.radius, self.sigma);
-        let fb = trans(self.radius - lr, 1.0, self.radius, self.sigma);
+        let fa = trans(lr - self.radius, 1.0, 0.0, self.sigma);
+        let fb = trans(self.radius - lr, 1.0, 0.0, self.sigma);
 
         self.k0 * rhoy * fa * fb
     }
@@ -318,8 +318,8 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let rhoz = self.rho_z(&q);
 
-        let fa = trans(lr - self.radius, 1.0, self.radius, self.sigma);
-        let fb = trans(self.radius - lr, 1.0, self.radius, self.sigma);
+        let fa = trans(lr - self.radius, 1.0, 0.0, self.sigma);
+        let fb = trans(self.radius - lr, 1.0, 0.0, self.sigma);
 
         self.k0 * rhoz * fa * fb
     }
@@ -350,10 +350,10 @@ impl WarpDrive for WarpDriveOurs {
         let drdx = self.d_r_dx(&q);
         drdx * self.k0
             * rhoy
-            * (-(d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+            * (-(d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     fn d_vy_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -366,11 +366,11 @@ impl WarpDrive for WarpDriveOurs {
         self.k0
             * (-(drdy
                 * rhoy
-                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + (drdy * rhoy * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    + drhoydy * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+                * d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + (drdy * rhoy * d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    + drhoydy * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     fn d_vy_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -383,11 +383,11 @@ impl WarpDrive for WarpDriveOurs {
         self.k0
             * (-(drdz
                 * rhoy
-                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + (drdz * rhoy * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    + drhoydz * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+                * d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + (drdz * rhoy * d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    + drhoydz * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     // Vz derivatives
@@ -399,10 +399,10 @@ impl WarpDrive for WarpDriveOurs {
 
         drdx * self.k0
             * rhoz
-            * (-(d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+            * (-(d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     fn d_vz_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -415,11 +415,11 @@ impl WarpDrive for WarpDriveOurs {
         self.k0
             * (-(drdy
                 * rhoz
-                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + (drdy * rhoz * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    + drhozdy * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+                * d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + (drdy * rhoz * d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    + drhozdy * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     fn d_vz_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -432,11 +432,11 @@ impl WarpDrive for WarpDriveOurs {
         self.k0
             * (-(drdz
                 * rhoz
-                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
-                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                + (drdz * rhoz * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
-                    + drhozdz * trans(lr - self.radius, 1.0, self.radius, self.sigma))
-                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
+                * d_trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma)
+                * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                + (drdz * rhoz * d_trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma)
+                    + drhozdz * trans(lr - self.radius - self.sigma, 1.0, 0.0, self.sigma))
+                    * trans(-lr + self.radius + self.sigma, 1.0, 0.0, self.sigma))
     }
 
     fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64 {
