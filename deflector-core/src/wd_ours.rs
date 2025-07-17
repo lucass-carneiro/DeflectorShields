@@ -300,95 +300,94 @@ impl WarpDrive for WarpDriveOurs {
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
         let f = trans(lr, 1.0, self.radius, self.sigma);
-
         self.u0 * f
     }
 
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-        let lrho = self.rho_y(&q);
+        let rhoy = self.rho_y(&q);
 
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
+        let fa = trans(lr - self.radius, 1.0, self.radius, self.sigma);
+        let fb = trans(self.radius - lr, 1.0, self.radius, self.sigma);
 
-        self.k0 * lrho * f
+        self.k0 * rhoy * fa * fb
     }
 
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-        let lrho = self.rho_z(&q);
+        let rhoz = self.rho_z(&q);
 
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
+        let fa = trans(lr - self.radius, 1.0, self.radius, self.sigma);
+        let fb = trans(self.radius - lr, 1.0, self.radius, self.sigma);
 
-        self.k0 * lrho * f
+        self.k0 * rhoz * fa * fb
     }
 
     // Vx Derivatives
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
-        let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
         let drdx = self.d_r_dx(&q);
-
-        self.u0 * dfdr * drdx
+        drdx * self.u0 * d_trans(lr, 1.0, self.radius, self.sigma)
     }
 
     fn d_vx_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
-        let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
         let drdy = self.d_r_dy(&q);
-
-        self.u0 * dfdr * drdy
+        drdy * self.u0 * d_trans(lr, 1.0, self.radius, self.sigma)
     }
 
     fn d_vx_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
-        let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
         let drdz = self.d_r_dz(&q);
-
-        self.u0 * dfdr * drdz
+        drdz * self.u0 * d_trans(lr, 1.0, self.radius, self.sigma)
     }
 
     // Vy Derivatives
     fn d_vy_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
         let rhoy = self.rho_y(&q);
-
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdx = self.d_r_dx(&q);
-
-        self.k0 * rhoy * dfdr * drdx
+        drdx * self.k0
+            * rhoy
+            * (-(d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     fn d_vy_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
         let rhoy = self.rho_y(&q);
+
         let drhoydy = self.d_rho_y_dy(&q);
-
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
-
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdy = self.d_r_dy(&q);
 
-        self.k0 * (drhoydy * f + rhoy * dfdr * drdy)
+        self.k0
+            * (-(drdy
+                * rhoy
+                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + (drdy * rhoy * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    + drhoydy * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     fn d_vy_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
         let rhoy = self.rho_y(&q);
+
         let drhoydz = self.d_rho_y_dz(&q);
-
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
-
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdz = self.d_r_dz(&q);
 
-        self.k0 * (drhoydz * f + rhoy * dfdr * drdz)
+        self.k0
+            * (-(drdz
+                * rhoy
+                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + (drdz * rhoy * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    + drhoydz * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     // Vz derivatives
@@ -396,38 +395,48 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r(&q);
         let rhoz = self.rho_z(&q);
 
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdx = self.d_r_dx(&q);
 
-        self.k0 * rhoz * dfdr * drdx
+        drdx * self.k0
+            * rhoz
+            * (-(d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     fn d_vz_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
         let rhoz = self.rho_z(&q);
+
         let drhozdy = self.d_rho_z_dy(&q);
-
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
-
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdy = self.d_r_dy(&q);
 
-        self.k0 * (drhozdy * f + rhoz * dfdr * drdy)
+        self.k0
+            * (-(drdy
+                * rhoz
+                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + (drdy * rhoz * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    + drhozdy * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     fn d_vz_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let lr = self.r(&q);
-
         let rhoz = self.rho_z(&q);
+
         let drhozdz = self.d_rho_z_dz(&q);
-
-        let f = trans(lr, 1.0, self.radius + self.sigma, self.sigma);
-
-        let dfdr = d_trans(lr, 1.0, self.radius + self.sigma, self.sigma);
         let drdz = self.d_r_dz(&q);
 
-        self.k0 * (drhozdz * f + rhoz * dfdr * drdz)
+        self.k0
+            * (-(drdz
+                * rhoz
+                * d_trans(-lr + self.radius, 1.0, self.radius, self.sigma)
+                * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                + (drdz * rhoz * d_trans(lr - self.radius, 1.0, self.radius, self.sigma)
+                    + drhozdz * trans(lr - self.radius, 1.0, self.radius, self.sigma))
+                    * trans(-lr + self.radius, 1.0, self.radius, self.sigma))
     }
 
     fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64 {
