@@ -63,7 +63,7 @@ impl PartialOrd for Dual {
     }
 }
 impl Dual {
-    pub const EPSILON: Dual = Dual { f: 0.0, df: 0.0 };
+    pub const EPSILON: Dual = Dual { f: 0.0, df: 1.0 };
     pub(crate) fn powi(p0: Dual, p1: i32) -> Dual {
         Dual{
             f: f64::powi(p0.f, p1),
