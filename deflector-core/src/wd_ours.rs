@@ -1,3 +1,4 @@
+use crate::dual::Dual;
 use crate::errors::{InitializationError, SlippageError};
 use crate::transition::*;
 use crate::types::{ParticleState, ParticleType};
@@ -14,19 +15,19 @@ const TRANSITION: Transitions = Transitions::Poly7;
 
 fn trans(x: f64, y0: f64, x0: f64, dx: f64) -> f64 {
     match TRANSITION {
-        Transitions::Poly5 => poly_trans_5(x, y0, x0, dx),
-        Transitions::Poly7 => poly_trans_7(x, y0, x0, dx),
-        Transitions::Poly9 => poly_trans_9(x, y0, x0, dx),
-        Transitions::Cinf => cinf(x, y0, x0, dx),
+        Transitions::Poly5 => poly_trans_5(x.into(), y0.into(), x0.into(), dx.into()).f,
+        Transitions::Poly7 => poly_trans_7(x.into(), y0.into(), x0.into(), dx.into()).f,
+        Transitions::Poly9 => poly_trans_9(x.into(), y0.into(), x0.into(), dx.into()).f,
+        Transitions::Cinf => cinf(x.into(), y0.into(), x0.into(), dx.into()).f,
     }
 }
 
 fn d_trans(x: f64, y0: f64, x0: f64, dx: f64) -> f64 {
     match TRANSITION {
-        Transitions::Poly5 => d_poly_trans_5_dx(x, y0, x0, dx),
-        Transitions::Poly7 => d_poly_trans_7_dx(x, y0, x0, dx),
-        Transitions::Poly9 => d_poly_trans_9_dx(x, y0, x0, dx),
-        Transitions::Cinf => d_cinf_dx(x, y0, x0, dx),
+        Transitions::Poly5 => poly_trans_5(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Poly7 => poly_trans_7(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Poly9 => poly_trans_9(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Cinf => cinf(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
     }
 }
 
@@ -41,7 +42,7 @@ pub struct WarpDriveOurs {
     pub x0: f64,      // Initial bubble position
     pub t0: f64,      // Initial bubble time
     pub gamma: f64,   // Time dilation strength
-    pub epsilon: f64, // Machine epsilon
+    pub epsilon: f64, // Machine EPSILON
 }
 
 impl WarpDriveOurs {
@@ -135,7 +136,10 @@ impl WarpDriveOurs {
 
     fn rho_y(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (q[2], q[3]);
-        y / f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2))
+        self.rho_y2(y.into(), z.into()).f
+    }
+    fn rho_y2(&self, y:Dual, z:Dual) -> Dual {
+        y / Dual::sqrt(self.epsilon + Dual::powi(y, 2) + Dual::powi(z, 2))
     }
 
     fn rho_z(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -172,7 +176,7 @@ impl WarpDriveOurs {
         )
     }
 
-    fn d_rho_y_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+    fn d_rho_y_dy_old(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (q[2], q[3]);
         (self.epsilon + f64::powi(z, 2))
             / f64::powi(
@@ -180,14 +184,18 @@ impl WarpDriveOurs {
                 3,
             )
     }
+    fn d_rho_y_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        self.rho_y2(
+            q[2]+Dual::EPSILON,
+            q[3].into()
+        ).df
+    }
 
     fn d_rho_y_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (y, z) = (q[2], q[3]);
-        -((y * z)
-            / f64::powi(
-                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
-                3,
-            ))
+        self.rho_y2(
+            q[2].into(),
+            Dual::EPSILON +q[3].into()
+        ).df
     }
 
     fn d_rho_z_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {

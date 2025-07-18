@@ -13,3 +13,4 @@ pub mod transition;
 pub mod types;
 pub mod warp_drive;
 pub mod wd_ours;
+mod dual;
