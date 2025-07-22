@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Dual {
@@ -27,7 +27,7 @@ impl From<f64> for Dual {
 
 impl PartialEq for Dual {
     fn eq(&self, other: &Dual) -> bool {
-        self.f == other.f && self.df == other.df
+        self.f == other.f
     }
 }
 
@@ -62,6 +62,14 @@ impl PartialOrd for Dual {
         self.f >= other.f
     }
 }
+
+impl Neg for Dual {
+    type Output = Dual;
+    fn neg(self) -> Dual {
+        Dual{f: -self.f, df: -self.df}
+    }
+}
+
 impl Dual {
     pub const EPSILON: Dual = Dual { f: 0.0, df: 1.0 };
     pub(crate) fn powi(p0: Dual, p1: i32) -> Dual {
@@ -125,5 +133,16 @@ impl Add<Dual> for f64 {
 
     fn add(self, rhs: Dual) -> Self::Output {
         Dual{f:self+rhs.f, df:rhs.df}
+    }
+}
+
+impl Mul<Dual> for f64 {
+    type Output = Dual;
+
+    fn mul(self, rhs: Dual) -> Self::Output {
+        Dual{
+            f:self*rhs.f,
+            df:self*rhs.df,
+        }
     }
 }

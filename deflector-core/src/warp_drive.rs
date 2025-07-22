@@ -1,3 +1,4 @@
+use crate::dual::Dual;
 use crate::errors::{InitializationError, NormalizationError};
 use crate::types::ParticleState;
 use crate::types::ParticleType;
@@ -61,6 +62,7 @@ pub trait WarpDrive {
 
         let v2 = vx * vx + vy * vy + vz * vz;
 
+        assert!(v2 < 1.0);
         if v2 > 1.0 {
             return Err(NormalizationError {
                 particle_type: *particle_type,
@@ -73,11 +75,27 @@ pub trait WarpDrive {
             });
         }
 
-        let energy = f64::sqrt(delta / (1.0 - v2));
 
-        Ok(ParticleState::from_column_slice(&[
-            x, y, z, vx, vy, vz, energy,
-        ]))
+        if let ParticleType::Photon = particle_type {
+            if v2 == 0.0 {
+                Ok(ParticleState::from_column_slice(&[
+                    x, y, z, -1.0, 0.0, 0.0, 1.0,
+                ]))
+            } else {
+                let vx2 = vx / f64::sqrt(v2);
+                let vy2 = vy / f64::sqrt(v2);
+                let vz2 = vz / f64::sqrt(v2);
+                Ok(ParticleState::from_column_slice(&[
+                    x, y, z, vx2, vy2, vz2, 1.0,
+                ]))
+            }
+        } else {
+            assert!(v2 < 1.0, "Normalized already");
+            let energy = f64::sqrt(delta / (1.0 - v2));
+            Ok(ParticleState::from_column_slice(&[
+                x, y, z, vx, vy, vz, energy,
+            ]))
+        }
     }
 
     fn rhs(&self, t: f64, state: &ParticleState<f64>) -> ParticleState<f64> {
@@ -147,4 +165,7 @@ pub trait WarpDrive {
             dx_dt, dy_dt, dz_dt, dvelx_dt, dvely_dt, dvelz_dt, denergy_dt,
         ])
     }
+    fn vx_dual(&self, lr:Dual) -> Dual;
+    fn vy_dual(&self, rhoy:Dual, lr:Dual) -> Dual;
+    fn vz_dual(&self, rhoz:Dual, lr:Dual) -> Dual;
 }
