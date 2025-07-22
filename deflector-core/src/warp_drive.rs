@@ -75,7 +75,7 @@ pub trait WarpDrive {
 
         if let ParticleType::Photon = particle_type {
             let v = f64::sqrt(v2);
-            if v.is_nan() {
+            if f64::is_nan(1. / v) /* This is fine. Floats are fine. */ {
                 Ok(ParticleState::from_column_slice(&[
                     x, y, z, -1.0, 0.0, 0.0, 1.0,
                 ]))
