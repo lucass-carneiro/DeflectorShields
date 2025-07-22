@@ -277,13 +277,11 @@ impl WarpDrive for WarpDriveOurs {
             }));
         }
 
-        let vx = slip / f64::sqrt(1.0 - slip * slip);
-
         Ok(self.make_normalized_state(
             self.get_bubble_position(t),
             0.0,
             0.0,
-            vx,
+            slip,
             0.0,
             0.0,
             &ParticleType::Massive,
