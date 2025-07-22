@@ -1,17 +1,5 @@
 use std::ops::Mul;
 use crate::dual::*;
-
-impl Mul<Dual> for f64 {
-    type Output = Dual;
-
-    fn mul(self, rhs: Dual) -> Self::Output {
-        Dual{
-            f:self*rhs.f,
-            df:self*rhs.df,
-        }
-    }
-}
-
 pub fn poly_trans_5(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
     if x < x0 {
         y0
