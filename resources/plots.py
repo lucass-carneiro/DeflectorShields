@@ -6,11 +6,11 @@ Usage:
   plots.py --version
 
 Options:
-  -h --help              Show this screen.
-  --version              Show version.
-  -b --follow-bubble     Follows the bubble.
-  --range-factor=<size>  Sets the window size multiplier [default: 3]
-  -s --save-pdf          Saves a PDF file along a regular PNG file
+  -h --help                 Show this screen.
+  --version                 Show version.
+  -b --follow-bubble        Follows the bubble.
+  -r --range-factor=<size>  Sets the window size multiplier [default: 3]
+  -s --save-pdf             Saves a PDF file along a regular PNG file
 """
 import logging
 from docopt import docopt
