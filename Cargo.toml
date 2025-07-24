@@ -2,5 +2,6 @@
 resolver = "2"
 members = [
     "deflector-core",
-    "deflector-standalone"
+    "deflector-standalone",
+    "deflector-field-plot"
 ]

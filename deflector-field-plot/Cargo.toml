@@ -1,0 +1,10 @@
+[package]
+name = "deflector-field-plot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+deflector-core = { path = "../deflector-core" }
+nalgebra = "0.33.2"
+
+
