@@ -356,12 +356,25 @@ impl WarpDrive for WarpDriveOurs {
 
         self.vy_dual(x_dual, rhoy, lr).f
     }
-    fn vy_dual(&self, x_dual:Dual, rhoy:Dual, lr:Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
 
-        self.k0 * rhoy * fa * fb * fc
+    fn base_v(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let x_dual = x.into();
+        let y_dual = y.into();
+        let z_dual = z.into();
+        let lr = self.r_dual(x_dual, y_dual, z_dual);
+        self.base_v_dual(x_dual, lr).f
+    }
+    fn base_v_dual(&self, x_dual:Dual, lr:Dual) -> Dual {
+        let s0 = self.sigma;
+        let r0 = self.radius + s0;
+        let fa = trans_dual(lr - r0.into(), 1.0, 0.0, 2.0*self.sigma);
+        let fb = trans_dual(-lr + r0.into(), 1.0, 0.0, 2.0*self.sigma);
+        let fc = trans_dual(-x_dual+s0.into(), 1.0, 0.0, self.sigma);
+        fa*fb*fc
+    }
+    fn vy_dual(&self, x_dual:Dual, rhoy:Dual, lr:Dual) -> Dual {
+        self.k0 * rhoy * self.base_v_dual(x_dual, lr)
     }
 
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -376,11 +389,7 @@ impl WarpDrive for WarpDriveOurs {
         self.vz_dual(x_dual, rhoz, lr).f
     }
     fn vz_dual(&self, x_dual:Dual, rhoz:Dual, lr:Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into();//trans_dual(-x_dual, 1.0, 0.0, self.sigma);
-
-        self.k0 * rhoz * fa * fb * fc
+        self.k0 * rhoz * self.base_v_dual(x_dual, lr)
     }
 
     // Vx Derivatives
