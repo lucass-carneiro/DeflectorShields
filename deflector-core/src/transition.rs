@@ -1,5 +1,5 @@
-use std::ops::Mul;
 use crate::dual::*;
+
 pub fn poly_trans_5(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
     if x < x0 {
         y0

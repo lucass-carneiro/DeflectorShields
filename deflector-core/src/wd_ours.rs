@@ -1,5 +1,3 @@
-// use core::num::dec2flt::float::RawFloat;
-use nalgebra::Vector4;
 use crate::dual::Dual;
 use crate::errors::{InitializationError, SlippageError};
 use crate::transition::*;
@@ -27,8 +25,8 @@ fn trans(x: f64, y0: f64, x0: f64, dx: f64) -> f64 {
 }
 
 fn simpl(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
-    let arg = (x-x0)/dx;
-    y0 / (arg*arg+1.0.into())
+    let arg = (x - x0) / dx;
+    y0 / (arg * arg + 1.0.into())
 }
 
 fn trans_dual(x: Dual, y0: f64, x0: f64, dx: f64) -> Dual {
@@ -36,18 +34,18 @@ fn trans_dual(x: Dual, y0: f64, x0: f64, dx: f64) -> Dual {
         Transitions::Poly5 => poly_trans_5(x, y0.into(), x0.into(), dx.into()),
         Transitions::Poly7 => poly_trans_7(x, y0.into(), x0.into(), dx.into()),
         Transitions::Poly9 => poly_trans_9(x, y0.into(), x0.into(), dx.into()),
-        Transitions::Cinf => cinf(x.into(), y0.into(), x0.into(), dx.into()),
-        Transitions::Simple => simpl(x.into(), y0.into(), x0.into(), dx.into()),
+        Transitions::Cinf => cinf(x, y0.into(), x0.into(), dx.into()),
+        Transitions::Simple => simpl(x, y0.into(), x0.into(), dx.into()),
     }
 }
 
 fn d_trans(x: f64, y0: f64, x0: f64, dx: f64) -> f64 {
     match TRANSITION {
-        Transitions::Poly5 => poly_trans_5(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
-        Transitions::Poly7 => poly_trans_7(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
-        Transitions::Poly9 => poly_trans_9(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
-        Transitions::Cinf => cinf(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
-        Transitions::Simple => simpl(Dual::EPSILON+x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Poly5 => poly_trans_5(Dual::EPSILON + x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Poly7 => poly_trans_7(Dual::EPSILON + x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Poly9 => poly_trans_9(Dual::EPSILON + x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Cinf => cinf(Dual::EPSILON + x.into(), y0.into(), x0.into(), dx.into()).df,
+        Transitions::Simple => simpl(Dual::EPSILON + x.into(), y0.into(), x0.into(), dx.into()).df,
     }
 }
 
@@ -68,11 +66,11 @@ pub struct WarpDriveOurs {
 impl WarpDriveOurs {
     pub fn new(radius: f64, sigma: f64, u: f64, u0: f64, k0: f64) -> Self {
         WarpDriveOurs {
-            radius: radius,
-            sigma: sigma,
-            u: u,
-            u0: u0,
-            k0: k0,
+            radius,
+            sigma,
+            u,
+            u0,
+            k0,
             x0: 0.0,
             t0: 0.0,
             gamma: 0.0,
@@ -112,7 +110,7 @@ impl WarpDriveOurs {
         self.x0 = self.get_bubble_position(t);
         self.t0 = t;
 
-        self.u0 = new_u - self.u + self.u0;
+        self.u0 += new_u - self.u;
         self.u = new_u;
     }
 
@@ -153,7 +151,7 @@ impl WarpDriveOurs {
                 + f64::powi(x - self.get_bubble_position(t), 2),
         )
     }
-    fn r_dual(&self, x:Dual, y:Dual, z:Dual) -> Dual {
+    fn r_dual(&self, x: Dual, y: Dual, z: Dual) -> Dual {
         Dual::sqrt(
             self.epsilon
                 + Dual::powi(y, 2)
@@ -166,7 +164,8 @@ impl WarpDriveOurs {
         let (y, z) = (q[2], q[3]);
         self.rho_y_dual(y.into(), z.into()).f
     }
-    fn rho_y_dual(&self, y:Dual, z:Dual) -> Dual {
+
+    fn rho_y_dual(&self, y: Dual, z: Dual) -> Dual {
         y / Dual::sqrt(self.epsilon + Dual::powi(y, 2) + Dual::powi(z, 2))
     }
 
@@ -174,7 +173,8 @@ impl WarpDriveOurs {
         let (y, z) = (q[2], q[3]);
         z / f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2))
     }
-    fn rho_z_dual(&self, y:Dual, z:Dual) -> Dual {
+    
+    fn rho_z_dual(&self, y: Dual, z: Dual) -> Dual {
         z / Dual::sqrt(self.epsilon + Dual::powi(y, 2) + Dual::powi(z, 2))
     }
 
@@ -183,8 +183,8 @@ impl WarpDriveOurs {
         let bubble_pos = self.get_bubble_position(t);
         (x - bubble_pos)
             / f64::sqrt(
-                self.epsilon + f64::powi(y, 2) + f64::powi(z, 2) + f64::powi(x - bubble_pos, 2),
-            )
+            self.epsilon + f64::powi(y, 2) + f64::powi(z, 2) + f64::powi(x - bubble_pos, 2),
+        )
     }
 
     fn d_r_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
@@ -211,21 +211,21 @@ impl WarpDriveOurs {
         let (y, z) = (q[2], q[3]);
         (self.epsilon + f64::powi(z, 2))
             / f64::powi(
-                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
-                3,
-            )
+            f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+            3,
+        )
     }
     fn d_rho_y_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         self.rho_y_dual(
-            q[2]+Dual::EPSILON,
-            q[3].into()
+            q[2] + Dual::EPSILON,
+            q[3].into(),
         ).df
     }
 
     fn d_rho_y_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         self.rho_y_dual(
             q[2].into(),
-            Dual::EPSILON +q[3].into()
+            Dual::EPSILON + q[3].into(),
         ).df
     }
 
@@ -233,18 +233,18 @@ impl WarpDriveOurs {
         let (y, z) = (q[2], q[3]);
         -((y * z)
             / f64::powi(
-                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
-                3,
-            ))
+            f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+            3,
+        ))
     }
 
     fn d_rho_z_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (y, z) = (q[2], q[3]);
         (self.epsilon + f64::powi(y, 2))
             / f64::powi(
-                f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
-                3,
-            )
+            f64::sqrt(self.epsilon + f64::powi(y, 2) + f64::powi(z, 2)),
+            3,
+        )
     }
 }
 
@@ -336,171 +336,171 @@ impl WarpDrive for WarpDriveOurs {
     }
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let lr = self.r_dual(x.into(),y.into(),z.into());
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(x.into(), y.into(), z.into());
         self.vx_dual(lr).f
     }
-    fn vx_dual(&self, lr:Dual) -> Dual {
-        let f = trans_dual(lr, 1.0, self.radius, self.sigma);
-        self.u0 * f
-    }
-
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
         let y_dual = y.into();
         let z_dual = z.into();
 
         let lr = self.r_dual(x_dual, y_dual, z_dual);
-        let rhoy = self.rho_y_dual(y_dual, z_dual);
+        let rho_y = self.rho_y_dual(y_dual, z_dual);
 
-        self.vy_dual(x_dual, rhoy, lr).f
-    }
-    fn vy_dual(&self, x_dual:Dual, rhoy:Dual, lr:Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
-
-        self.k0 * rhoy * fa * fb * fc
+        self.vy_dual(x_dual, rho_y, lr).f
     }
 
     fn vz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
         let y_dual = y.into();
         let z_dual = z.into();
 
         let lr = self.r_dual(x_dual, y_dual, z_dual);
-        let rhoz = self.rho_z_dual(y_dual, z_dual);
+        let rho_z = self.rho_z_dual(y_dual, z_dual);
 
-        self.vz_dual(x_dual, rhoz, lr).f
+        self.vz_dual(x_dual, rho_z, lr).f
     }
-    fn vz_dual(&self, x_dual:Dual, rhoz:Dual, lr:Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into();//trans_dual(-x_dual, 1.0, 0.0, self.sigma);
-
-        self.k0 * rhoz * fa * fb * fc
-    }
-
     // Vx Derivatives
     fn d_vx_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let lr = self.r_dual(Dual::EPSILON+x.into(),y.into(),z.into());
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(Dual::EPSILON + x.into(), y.into(), z.into());
         self.vx_dual(lr).df
     }
 
     fn d_vx_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let lr = self.r_dual(x.into(),Dual::EPSILON+y.into(),z.into());
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(x.into(), Dual::EPSILON + y.into(), z.into());
         self.vx_dual(lr).df
     }
-
     fn d_vx_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let lr = self.r_dual(x.into(),y.into(),Dual::EPSILON+z.into());
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(x.into(), y.into(), Dual::EPSILON + z.into());
         self.vx_dual(lr).df
     }
 
     // Vy Derivatives
     fn d_vy_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let x_dual = Dual::EPSILON+x.into();
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let x_dual = Dual::EPSILON + x.into();
         let y_dual = y.into();
         let z_dual = z.into();
-        let lr = self.r_dual(x_dual,y_dual,z_dual);
-        let rhoy= self.rho_y_dual(y_dual,z_dual);
-        self.vy_dual(x_dual, rhoy, lr).df
+        let lr = self.r_dual(x_dual, y_dual, z_dual);
+        let rho_y = self.rho_y_dual(y_dual, z_dual);
+        self.vy_dual(x_dual, rho_y, lr).df
     }
 
     fn d_vy_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
-        let y_dual = Dual::EPSILON+y.into();
+        let y_dual = Dual::EPSILON + y.into();
         let z_dual = z.into();
-        let lr = self.r_dual(x_dual,y_dual,z_dual);
-        let rhoy= self.rho_y_dual(y_dual,z_dual);
-        self.vy_dual(x_dual, rhoy, lr).df
+        let lr = self.r_dual(x_dual, y_dual, z_dual);
+        let rho_y = self.rho_y_dual(y_dual, z_dual);
+        self.vy_dual(x_dual, rho_y, lr).df
     }
 
     fn d_vy_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
         let y_dual = y.into();
-        let z_dual = Dual::EPSILON+z.into();
-        let lr = self.r_dual(x_dual,y_dual,z_dual);
-        let rhoy= self.rho_y_dual(y_dual,z_dual);
-        self.vy_dual(x_dual, rhoy, lr).df
+        let z_dual = Dual::EPSILON + z.into();
+        let lr = self.r_dual(x_dual, y_dual, z_dual);
+        let rho_y = self.rho_y_dual(y_dual, z_dual);
+        self.vy_dual(x_dual, rho_y, lr).df
     }
 
     // Vz derivatives
     fn d_vz_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
-        let x_dual = Dual::EPSILON+x.into();
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let x_dual = Dual::EPSILON + x.into();
         let y_dual = y.into();
         let z_dual = z.into();
 
         let lr = self.r_dual(x_dual, y_dual, z_dual);
-        let rhoz = self.rho_z_dual(y_dual, z_dual);
+        let rho_z = self.rho_z_dual(y_dual, z_dual);
 
-        self.vz_dual(x_dual, rhoz, lr).df
+        self.vz_dual(x_dual, rho_z, lr).df
     }
 
     fn d_vz_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
-        let y_dual = Dual::EPSILON+y.into();
+        let y_dual = Dual::EPSILON + y.into();
         let z_dual = z.into();
 
         let lr = self.r_dual(x_dual, y_dual, z_dual);
-        let rhoz = self.rho_z_dual(y_dual, z_dual);
+        let rho_z = self.rho_z_dual(y_dual, z_dual);
 
-        self.vz_dual(x_dual, rhoz, lr).df
+        self.vz_dual(x_dual, rho_z, lr).df
     }
 
     fn d_vz_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1]-self.get_bubble_position(q[0]), q[2], q[3]);
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
         let y_dual = y.into();
-        let z_dual = Dual::EPSILON+z.into();
+        let z_dual = Dual::EPSILON + z.into();
 
         let lr = self.r_dual(x_dual, y_dual, z_dual);
-        let rhoz = self.rho_z_dual(y_dual, z_dual);
+        let rho_z = self.rho_z_dual(y_dual, z_dual);
 
-        self.vz_dual(x_dual, rhoz, lr).df
+        self.vz_dual(x_dual, rho_z, lr).df
     }
 
     fn alp(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let lr = self.r(&q);
+        let lr = self.r(q);
         let f = trans(lr, 1.0, self.radius, self.sigma);
 
         1.0 - self.gamma * f
     }
 
     fn d_alp_dx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let lr = self.r(&q);
+        let lr = self.r(q);
 
         let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
-        let drdx = self.d_r_dx(&q);
+        let drdx = self.d_r_dx(q);
 
         -self.gamma * dfdr * drdx
     }
 
     fn d_alp_dy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let lr = self.r(&q);
+        let lr = self.r(q);
 
         let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
-        let drdy = self.d_r_dy(&q);
+        let drdy = self.d_r_dy(q);
 
         -self.gamma * dfdr * drdy
     }
 
     fn d_alp_dz(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let lr = self.r(&q);
+        let lr = self.r(q);
 
         let dfdr = d_trans(lr, 1.0, self.radius, self.sigma);
-        let drdz = self.d_r_dz(&q);
+        let drdz = self.d_r_dz(q);
 
         -self.gamma * dfdr * drdz
+    }
+
+    fn vx_dual(&self, lr: Dual) -> Dual {
+        let f = trans_dual(lr, 1.0, self.radius, self.sigma);
+        self.u0 * f
+    }
+
+    fn vy_dual(&self, x_dual: Dual, rho_y: Dual, lr: Dual) -> Dual {
+        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
+        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
+        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
+
+        self.k0 * rho_y * fa * fb * fc
+    }
+
+    fn vz_dual(&self, x_dual: Dual, rho_z: Dual, lr: Dual) -> Dual {
+        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
+        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
+        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
+
+        self.k0 * rho_z * fa * fb * fc
     }
 }

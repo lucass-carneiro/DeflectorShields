@@ -21,7 +21,7 @@ impl Dual {
 
 impl From<f64> for Dual {
     fn from(f: f64) -> Dual {
-        Dual { f: f, df: 0.0 }
+        Dual { f, df: 0.0 }
     }
 }
 
@@ -31,35 +31,15 @@ impl PartialEq for Dual {
     }
 }
 
-impl Ord for Dual {
-    fn cmp(&self, other: &Dual) -> Ordering {
-        self.f.partial_cmp(&other.f).unwrap()
-    }
-}
 impl Eq for Dual {
     fn assert_receiver_is_total_eq(&self) {
         assert!(self.f.is_nan());
     }
 }
+
 impl PartialOrd for Dual {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.f.partial_cmp(&other.f)
-    }
-
-    fn lt(&self, other: &Self) -> bool {
-        self.f < other.f
-    }
-
-    fn le(&self, other: &Self) -> bool {
-        self.f <= other.f
-    }
-
-    fn gt(&self, other: &Self) -> bool {
-        self.f > other.f
-    }
-
-    fn ge(&self, other: &Self) -> bool {
-        self.f >= other.f
     }
 }
 
@@ -83,14 +63,6 @@ impl Dual {
 impl Dual {
     pub(crate) fn sqrt(p0: Dual) -> Dual {
         Dual {f:f64::sqrt(p0.f), df:0.5/f64::sqrt(p0.f)*p0.df}
-    }
-}
-
-impl Dual {
-    pub(crate) fn diff(p0: Box<dyn Fn(Dual) -> Dual>, p1:f64) -> f64 {
-        let epsilon = Dual::new(p1, 1.0);
-        let x = p0(epsilon).df;
-        x
     }
 }
 
