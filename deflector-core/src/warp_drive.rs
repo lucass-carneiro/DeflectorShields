@@ -168,5 +168,6 @@ pub trait WarpDrive {
     fn vx_dual(&self, lr:Dual) -> Dual;
     fn vy_dual(&self, x_dual:Dual, rhoy:Dual, lr:Dual) -> Dual;
     fn vz_dual(&self, x_dual:Dual, rhoz:Dual, lr:Dual) -> Dual;
-    fn v_base(&self, x_dual: Dual, lr: Dual) -> Dual;
+    fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual;
+    fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64;
 }
