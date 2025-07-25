@@ -75,7 +75,6 @@ pub trait WarpDrive {
             });
         }
 
-
         if let ParticleType::Photon = particle_type {
             let v = f64::sqrt(v2);
             if f64::is_nan(1. / v) /* This is fine. Floats are fine. */ {
