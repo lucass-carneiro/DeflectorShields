@@ -346,6 +346,7 @@ impl WarpDrive for WarpDriveOurs {
         let lr = self.r_dual(x.into(), y.into(), z.into());
         self.vx_dual(lr).f
     }
+
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let x_dual = x.into();
