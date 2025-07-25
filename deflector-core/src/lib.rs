@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod debug;
 pub mod errors;
 pub mod evolve;
@@ -13,3 +15,4 @@ pub mod transition;
 pub mod types;
 pub mod warp_drive;
 pub mod wd_ours;
+mod dual;
