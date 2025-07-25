@@ -494,20 +494,29 @@ impl WarpDrive for WarpDriveOurs {
         self.u0 * f
     }
 
-    fn v_base(&self, x_dual: Dual, lr: Dual) -> Dual {
+    fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let x_dual = x.into();
+        let y_dual = y.into();
+        let z_dual = Dual::EPSILON + z.into();
+        let lr = self.r_dual(x_dual, y_dual, z_dual);
+        self.v_base_dual(x_dual, lr).f
+    }
+
+    fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual {
         let r0 = self.radius+self.deflector_sigma_pushout*self.sigma;
         let s0 = self.deflector_sigma_factor*self.sigma;
         let fa = trans_dual(lr - r0.into(), 1.0, 0.0, s0);
         let fb = trans_dual(-lr + r0.into(), 1.0, 0.0, s0);
-        let fc = self.deflector_back*trans_dual(-x_dual+self.sigma.into(), 1.0, 0.0, self.sigma);
+        let fc = (1.0-self.deflector_back)*trans_dual(-x_dual+self.sigma.into(), 1.0, 0.0, self.sigma)+self.deflector_back.into();
         fa * fb* fc
     }
 
     fn vy_dual(&self, x_dual: Dual, rho_y: Dual, lr: Dual) -> Dual {
-        self.k0 * rho_y * self.v_base(x_dual, lr)
+        self.k0 * rho_y * self.v_base_dual(x_dual, lr)
     }
 
     fn vz_dual(&self, x_dual: Dual, rho_z: Dual, lr: Dual) -> Dual {
-        self.k0 * rho_z * self.v_base(x_dual, lr)
+        self.k0 * rho_z * self.v_base_dual(x_dual, lr)
     }
 }

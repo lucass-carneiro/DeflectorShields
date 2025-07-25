@@ -33,7 +33,7 @@ fn main() {
         0.1,
         1.0,
         1.1,
-        0.0,
+        0.5,
     );
 
     let x_min = -12.;
@@ -52,7 +52,7 @@ fn main() {
         for j in 0..=steps {
             let y = y_min + y_step * j as f64;
 
-            let val = wd.vy(&Vector4::new(0., x, y, 0.));
+            let val = wd.vx(&Vector4::new(0., x, y, 0.));
 
             dump.add_record(DataPoint3d {
                 x,
