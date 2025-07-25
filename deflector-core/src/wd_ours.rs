@@ -61,16 +61,22 @@ pub struct WarpDriveOurs {
     pub t0: f64,      // Initial bubble time
     pub gamma: f64,   // Time dilation strength
     pub epsilon: f64, // Machine EPSILON
+    pub deflector_sigma_pushout: f64,
+    pub deflector_sigma_factor: f64,
+    pub deflector_back: f64, // Should be 1.0 or 0.0
 }
 
 impl WarpDriveOurs {
-    pub fn new(radius: f64, sigma: f64, u: f64, u0: f64, k0: f64) -> Self {
+    pub fn new(radius: f64, sigma: f64, u: f64, u0: f64, k0: f64, deflector_sigma_pushout: f64, deflector_sigma_factor: f64, deflector_back: f64) -> Self {
         WarpDriveOurs {
             radius,
             sigma,
             u,
             u0,
             k0,
+            deflector_sigma_pushout: deflector_sigma_pushout,
+            deflector_sigma_factor: deflector_sigma_factor,
+            deflector_back: deflector_back,
             x0: 0.0,
             t0: 0.0,
             gamma: 0.0,
@@ -488,19 +494,20 @@ impl WarpDrive for WarpDriveOurs {
         self.u0 * f
     }
 
-    fn vy_dual(&self, x_dual: Dual, rho_y: Dual, lr: Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
+    fn v_base(&self, x_dual: Dual, lr: Dual) -> Dual {
+        let r0 = self.radius+self.deflector_sigma_pushout*self.sigma;
+        let s0 = self.deflector_sigma_factor*self.sigma;
+        let fa = trans_dual(lr - r0.into(), 1.0, 0.0, s0);
+        let fb = trans_dual(-lr + r0.into(), 1.0, 0.0, s0);
+        let fc = self.deflector_back*trans_dual(-x_dual+self.sigma.into(), 1.0, 0.0, self.sigma);
+        fa * fb* fc
+    }
 
-        self.k0 * rho_y * fa * fb * fc
+    fn vy_dual(&self, x_dual: Dual, rho_y: Dual, lr: Dual) -> Dual {
+        self.k0 * rho_y * self.v_base(x_dual, lr)
     }
 
     fn vz_dual(&self, x_dual: Dual, rho_z: Dual, lr: Dual) -> Dual {
-        let fa = trans_dual(lr - self.radius.into(), 1.0, 0.0, self.sigma);
-        let fb = trans_dual(-lr + self.radius.into(), 1.0, 0.0, self.sigma);
-        let fc = 1.0.into(); //trans_dual(-x_dual, 1.0, 0.0, self.sigma);
-
-        self.k0 * rho_z * fa * fb * fc
+        self.k0 * rho_z * self.v_base(x_dual, lr)
     }
 }
