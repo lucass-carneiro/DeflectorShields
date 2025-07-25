@@ -103,6 +103,18 @@ impl WarpDriveOurs {
     pub fn get_k0(&self) -> f64 {
         self.k0
     }
+    
+    pub fn get_deflector_sigma_pushout(&self) -> f64 {
+        self.deflector_sigma_pushout
+    }
+    
+    pub fn get_deflector_sigma_factor(&self) -> f64 {
+        self.deflector_sigma_factor
+    }
+    
+    pub fn get_deflector_back(&self) -> f64 {
+        self.deflector_back
+    }
 
     pub fn update_radius(&mut self, new_radius: f64) {
         self.radius = new_radius;
@@ -146,6 +158,18 @@ impl WarpDriveOurs {
 
     pub fn update_k0(&mut self, new_k0: f64) {
         self.k0 = new_k0;
+    }
+    
+    pub fn update_deflector_sigma_pushout(&mut self, new_deflector_sigma_pushout: f64) {
+        self.deflector_sigma_pushout = new_deflector_sigma_pushout;
+    }
+    
+    pub fn update_deflector_sigma_factor(&mut self, new_deflector_sigma_factor: f64) {
+        self.deflector_sigma_factor = new_deflector_sigma_factor;
+    }
+    
+    pub fn update_deflector_back(&mut self, new_deflector_back: f64) {
+        self.deflector_back = new_deflector_back;
     }
 
     fn r(&self, q: &nalgebra::Vector4<f64>) -> f64 {
