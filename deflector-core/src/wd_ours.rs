@@ -3,6 +3,24 @@ use crate::errors::{InitializationError, SlippageError};
 use crate::types::{ParticleState, ParticleType};
 use crate::warp_drive::WarpDrive;
 
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "jason_parfiles", derive(serde::Deserialize))]
+pub struct WarpDriveOurs {
+    pub radius: f64,                  // Bubble radius
+    pub sigma: f64,                   // Bubble transition region width
+    pub u: f64,                       // Bubble speed
+    pub u0: f64,                      // Dragging speed
+    pub k0: f64,                      // Deflection stength
+    pub x0: f64,                      // Initial bubble position
+    pub t0: f64,                      // Initial bubble time
+    pub gamma: f64,                   // Time dilation strength. TODO: Remove
+    pub epsilon: f64,                 // Machine EPSILON to avoid divisions by zero
+    pub deflector_sigma_pushout: f64, // TODO: Document
+    pub deflector_sigma_factor: f64,  // TODO: Document
+    pub deflector_back: f64,          // Should be 1.0 or 0.0. TODO: Why? Document.
+}
+
+// Transition functions
 fn trans(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
     if x < x0 {
         y0
@@ -21,23 +39,6 @@ fn trans(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
 
 fn trans_dual(x: Dual, y0: f64, x0: f64, dx: f64) -> Dual {
     trans(x, y0.into(), x0.into(), dx.into())
-}
-
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "jason_parfiles", derive(serde::Deserialize))]
-pub struct WarpDriveOurs {
-    pub radius: f64,  // Bubble radius
-    pub sigma: f64,   // Bubble transition region width
-    pub u: f64,       // Bubble speed
-    pub u0: f64,      // Dragging speed
-    pub k0: f64,      // Deflection stength
-    pub x0: f64,      // Initial bubble position
-    pub t0: f64,      // Initial bubble time
-    pub gamma: f64,   // Time dilation strength. TODO: Remove
-    pub epsilon: f64, // Machine EPSILON to avoid divisions by zero
-    pub deflector_sigma_pushout: f64,
-    pub deflector_sigma_factor: f64,
-    pub deflector_back: f64, // Should be 1.0 or 0.0
 }
 
 impl WarpDriveOurs {
