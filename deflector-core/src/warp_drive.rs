@@ -61,6 +61,7 @@ pub trait WarpDrive {
 
         let v2 = vx * vx + vy * vy + vz * vz;
 
+        assert!(v2 < 1.0);
         if v2 > 1.0 {
             return Err(NormalizationError {
                 particle_type: *particle_type,
@@ -73,11 +74,29 @@ pub trait WarpDrive {
             });
         }
 
-        let energy = f64::sqrt(delta / (1.0 - v2));
-
-        Ok(ParticleState::from_column_slice(&[
-            x, y, z, vx, vy, vz, energy,
-        ]))
+        if let ParticleType::Photon = particle_type {
+            let v = f64::sqrt(v2);
+            if f64::is_nan(1. / v)
+            /* This is fine. Floats are fine. */
+            {
+                Ok(ParticleState::from_column_slice(&[
+                    x, y, z, -1.0, 0.0, 0.0, 1.0,
+                ]))
+            } else {
+                let vx2 = vx / v;
+                let vy2 = vy / v;
+                let vz2 = vz / v;
+                Ok(ParticleState::from_column_slice(&[
+                    x, y, z, vx2, vy2, vz2, 1.0,
+                ]))
+            }
+        } else {
+            assert!(v2 < 1.0, "Normalized already");
+            let energy = f64::sqrt(delta / (1.0 - v2));
+            Ok(ParticleState::from_column_slice(&[
+                x, y, z, vx, vy, vz, energy,
+            ]))
+        }
     }
 
     fn rhs(&self, t: f64, state: &ParticleState<f64>) -> ParticleState<f64> {
