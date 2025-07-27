@@ -19674,7 +19674,7 @@ Cell[BoxData[{
       "\[IndentingNewLine]", 
       RowBox[{"\"\<sqrt\>\"", "->", "\"\<f64::sqrt\>\""}], ",", 
       "\[IndentingNewLine]", 
-      RowBox[{"\"\<epsilon\>\"", "->", "\"\<self.epsilon\>\""}], ",", 
+      RowBox[{"\"\<EPSILON\>\"", "->", "\"\<self.EPSILON\>\""}], ",",
       "\[IndentingNewLine]", 
       RowBox[{"\"\<deltau\>\"", "->", "\"\<self.delta_u\>\""}], ",", 
       "\[IndentingNewLine]", 
@@ -19695,7 +19695,7 @@ Cell[BoxData[{
         RowBox[{"x", "-", 
          RowBox[{"pos", "[", "t", "]"}]}], ")"}], "^", "2"}], "+", 
       RowBox[{"y", "^", "2"}], "+", 
-      RowBox[{"z", "^", "2"}], "+", "epsilon"}], "]"}]}], ";"}], 
+      RowBox[{"z", "^", "2"}], "+", "EPSILON"}], "]"}]}], ";"}],
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"Print", "[", 
   RowBox[{"\"\<r = \>\"", ",", 
@@ -19758,10 +19758,10 @@ Cell[CellGroupData[{
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"r = \"\>", 
-   "\[InvisibleSpace]", "\<\"f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2) + f64::powi(x - get_bubble_position(t),2))\"\>"}],
   SequenceForm[
-  "r = ", "f64::sqrt(self.epsilon + f64::powi(y,2) + f64::powi(z,2) + \
+  "r = ", "f64::sqrt(self.EPSILON + f64::powi(y,2) + f64::powi(z,2) + \
 f64::powi(x - get_bubble_position(t),2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -19779,11 +19779,11 @@ Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_r_dx = \"\>", 
    "\[InvisibleSpace]", "\<\"(x - \
-get_bubble_position(t))/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+get_bubble_position(t))/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2) + f64::powi(x - get_bubble_position(t),2))\"\>"}],
   SequenceForm[
   "d_r_dx = ", 
-   "(x - get_bubble_position(t))/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "(x - get_bubble_position(t))/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2) + f64::powi(x - get_bubble_position(t),2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -19800,11 +19800,11 @@ In[9]:=",ExpressionUUID->"44005a36-7826-40bb-b404-29fb51a2af2f"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_r_dy = \"\>", 
-   "\[InvisibleSpace]", "\<\"y/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"y/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2) + f64::powi(x - get_bubble_position(t),2))\"\>"}],
   SequenceForm[
   "d_r_dy = ", 
-   "y/f64::sqrt(self.epsilon + f64::powi(y,2) + f64::powi(z,2) + f64::powi(x \
+   "y/f64::sqrt(self.EPSILON + f64::powi(y,2) + f64::powi(z,2) + f64::powi(x \
 - get_bubble_position(t),2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -19821,11 +19821,11 @@ In[9]:=",ExpressionUUID->"07d05295-3b5c-4fc9-8b6f-462d4c34422d"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_r_dz = \"\>", 
-   "\[InvisibleSpace]", "\<\"z/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"z/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2) + f64::powi(x - get_bubble_position(t),2))\"\>"}],
   SequenceForm[
   "d_r_dz = ", 
-   "z/f64::sqrt(self.epsilon + f64::powi(y,2) + f64::powi(z,2) + f64::powi(x \
+   "z/f64::sqrt(self.EPSILON + f64::powi(y,2) + f64::powi(z,2) + f64::powi(x \
 - get_bubble_position(t),2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -19855,7 +19855,7 @@ Cell[BoxData[{
       "\[IndentingNewLine]", 
       RowBox[{"\"\<sqrt\>\"", "->", "\"\<f64::sqrt\>\""}], ",", 
       "\[IndentingNewLine]", 
-      RowBox[{"\"\<epsilon\>\"", "->", "\"\<self.epsilon\>\""}], ",", 
+      RowBox[{"\"\<EPSILON\>\"", "->", "\"\<self.EPSILON\>\""}], ",",
       "\[IndentingNewLine]", 
       RowBox[{"\"\<powi\>\"", "->", "\"\<f64::powi\>\""}]}], 
      "\[IndentingNewLine]", "}"}]}], ";"}], 
@@ -19871,7 +19871,7 @@ Cell[BoxData[{
      RowBox[{"Sqrt", "[", 
       RowBox[{
        RowBox[{"y", "^", "2"}], "+", 
-       RowBox[{"z", "^", "2"}], "+", "epsilon"}], "]"}]}]}], ";"}], 
+       RowBox[{"z", "^", "2"}], "+", "EPSILON"}], "]"}]}]}], ";"}],
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"Print", "[", 
   RowBox[{"\"\<r = \>\"", ",", 
@@ -19932,10 +19932,10 @@ Cell[CellGroupData[{
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"r = \"\>", 
-   "\[InvisibleSpace]", "\<\"y/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"y/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2))\"\>"}],
   SequenceForm[
-  "r = ", "y/f64::sqrt(self.epsilon + f64::powi(y,2) + f64::powi(z,2))"],
+  "r = ", "y/f64::sqrt(self.EPSILON + f64::powi(y,2) + f64::powi(z,2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
   3.959962754403612*^9, 3.9599629612489233`*^9, {3.959990684310096*^9, 
@@ -19961,12 +19961,12 @@ In[121]:=",ExpressionUUID->"d4877b41-ef8b-4b7b-9d7b-e62c4b47ac32"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_rho_y_dy = \"\>", 
-   "\[InvisibleSpace]", "\<\"(self.epsilon + \
-f64::powi(z,2))/f64::powi(f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"(self.EPSILON + \
+f64::powi(z,2))/f64::powi(f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2)),3)\"\>"}],
   SequenceForm[
   "d_rho_y_dy = ", 
-   "(self.epsilon + f64::powi(z,2))/f64::powi(f64::sqrt(self.epsilon + \
+   "(self.EPSILON + f64::powi(z,2))/f64::powi(f64::sqrt(self.EPSILON + \
 f64::powi(y,2) + f64::powi(z,2)),3)"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -19980,11 +19980,11 @@ In[121]:=",ExpressionUUID->"572b66dc-3c27-4147-b5c5-7b79ca9670fd"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_rho_y_dz = \"\>", 
-   "\[InvisibleSpace]", "\<\"-((y*z)/f64::powi(f64::sqrt(self.epsilon + \
+   "\[InvisibleSpace]", "\<\"-((y*z)/f64::powi(f64::sqrt(self.EPSILON + \
 f64::powi(y,2) + f64::powi(z,2)),3))\"\>"}],
   SequenceForm[
   "d_rho_y_dz = ", 
-   "-((y*z)/f64::powi(f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "-((y*z)/f64::powi(f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2)),3))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -20011,7 +20011,7 @@ Cell[BoxData[{
       "\[IndentingNewLine]", 
       RowBox[{"\"\<sqrt\>\"", "->", "\"\<f64::sqrt\>\""}], ",", 
       "\[IndentingNewLine]", 
-      RowBox[{"\"\<epsilon\>\"", "->", "\"\<self.epsilon\>\""}], ",", 
+      RowBox[{"\"\<EPSILON\>\"", "->", "\"\<self.EPSILON\>\""}], ",",
       "\[IndentingNewLine]", 
       RowBox[{"\"\<powi\>\"", "->", "\"\<f64::powi\>\""}]}], 
      "\[IndentingNewLine]", "}"}]}], ";"}], 
@@ -20027,7 +20027,7 @@ Cell[BoxData[{
      RowBox[{"Sqrt", "[", 
       RowBox[{
        RowBox[{"y", "^", "2"}], "+", 
-       RowBox[{"z", "^", "2"}], "+", "epsilon"}], "]"}]}]}], ";"}], 
+       RowBox[{"z", "^", "2"}], "+", "EPSILON"}], "]"}]}]}], ";"}],
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"Print", "[", 
   RowBox[{"\"\<r = \>\"", ",", 
@@ -20082,10 +20082,10 @@ Cell[CellGroupData[{
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"r = \"\>", 
-   "\[InvisibleSpace]", "\<\"z/f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"z/f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2))\"\>"}],
   SequenceForm[
-  "r = ", "z/f64::sqrt(self.epsilon + f64::powi(y,2) + f64::powi(z,2))"],
+  "r = ", "z/f64::sqrt(self.EPSILON + f64::powi(y,2) + f64::powi(z,2))"],
   Editable->False]], "Print",
  CellChangeTimes->{
   3.960030041620216*^9, 3.96151568900847*^9, {3.9615190556219187`*^9, 
@@ -20109,11 +20109,11 @@ In[19]:=",ExpressionUUID->"359d697f-9582-453d-8675-0266efec941d"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_rho_z_dy = \"\>", 
-   "\[InvisibleSpace]", "\<\"-((y*z)/f64::powi(f64::sqrt(self.epsilon + \
+   "\[InvisibleSpace]", "\<\"-((y*z)/f64::powi(f64::sqrt(self.EPSILON + \
 f64::powi(y,2) + f64::powi(z,2)),3))\"\>"}],
   SequenceForm[
   "d_rho_z_dy = ", 
-   "-((y*z)/f64::powi(f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "-((y*z)/f64::powi(f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2)),3))"],
   Editable->False]], "Print",
  CellChangeTimes->{
@@ -20126,12 +20126,12 @@ In[19]:=",ExpressionUUID->"f8a8b1f6-8f30-420a-9623-f9bb14b3ca7d"],
 Cell[BoxData[
  InterpretationBox[
   RowBox[{"\<\"d_rho_z_dz = \"\>", 
-   "\[InvisibleSpace]", "\<\"(self.epsilon + \
-f64::powi(y,2))/f64::powi(f64::sqrt(self.epsilon + f64::powi(y,2) + \
+   "\[InvisibleSpace]", "\<\"(self.EPSILON + \
+f64::powi(y,2))/f64::powi(f64::sqrt(self.EPSILON + f64::powi(y,2) + \
 f64::powi(z,2)),3)\"\>"}],
   SequenceForm[
   "d_rho_z_dz = ", 
-   "(self.epsilon + f64::powi(y,2))/f64::powi(f64::sqrt(self.epsilon + \
+   "(self.EPSILON + f64::powi(y,2))/f64::powi(f64::sqrt(self.EPSILON + \
 f64::powi(y,2) + f64::powi(z,2)),3)"],
   Editable->False]], "Print",
  CellChangeTimes->{
