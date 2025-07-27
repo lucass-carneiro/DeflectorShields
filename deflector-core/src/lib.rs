@@ -11,8 +11,7 @@ pub mod output;
 #[cfg(feature = "jason_parfiles")]
 pub mod params;
 
-pub mod transition;
+mod dual;
 pub mod types;
 pub mod warp_drive;
 pub mod wd_ours;
-mod dual;

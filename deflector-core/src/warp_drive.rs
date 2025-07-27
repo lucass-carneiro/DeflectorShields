@@ -1,4 +1,3 @@
-use crate::dual::Dual;
 use crate::errors::{InitializationError, NormalizationError};
 use crate::types::ParticleState;
 use crate::types::ParticleType;
@@ -77,7 +76,9 @@ pub trait WarpDrive {
 
         if let ParticleType::Photon = particle_type {
             let v = f64::sqrt(v2);
-            if f64::is_nan(1. / v) /* This is fine. Floats are fine. */ {
+            if f64::is_nan(1. / v)
+            /* This is fine. Floats are fine. */
+            {
                 Ok(ParticleState::from_column_slice(&[
                     x, y, z, -1.0, 0.0, 0.0, 1.0,
                 ]))
@@ -165,9 +166,4 @@ pub trait WarpDrive {
             dx_dt, dy_dt, dz_dt, dvelx_dt, dvely_dt, dvelz_dt, denergy_dt,
         ])
     }
-    fn vx_dual(&self, lr:Dual) -> Dual;
-    fn vy_dual(&self, x_dual:Dual, rhoy:Dual, lr:Dual) -> Dual;
-    fn vz_dual(&self, x_dual:Dual, rhoz:Dual, lr:Dual) -> Dual;
-    fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual;
-    fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64;
 }
