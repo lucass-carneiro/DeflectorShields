@@ -181,15 +181,15 @@ impl WarpDriveOurs {
         let fc = (1.0 - self.deflector_back)
             * trans_dual(-x_dual + self.sigma.into(), 1.0, 0.0, self.sigma)
             + self.deflector_back.into();
-        fa * fb * fc
+        self.k0 * fa * fb * fc
     }
 
     fn vy_dual(&self, x_dual: Dual, rho_y: Dual, lr: Dual) -> Dual {
-        self.k0 * rho_y * self.v_base_dual(x_dual, lr)
+        rho_y * self.v_base_dual(x_dual, lr)
     }
 
     fn vz_dual(&self, x_dual: Dual, rho_z: Dual, lr: Dual) -> Dual {
-        self.k0 * rho_z * self.v_base_dual(x_dual, lr)
+        rho_z * self.v_base_dual(x_dual, lr)
     }
 }
 
