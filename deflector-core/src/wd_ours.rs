@@ -21,9 +21,9 @@ pub struct WarpDriveOurs {
 }
 
 // Transition functions
-fn trans(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
+fn trans(x: Dual, x0: Dual, dx: Dual) -> Dual {
     if x < x0 {
-        y0
+        1.0.into()
     } else if x > (x0 + dx) {
         0.0.into()
     } else {
@@ -31,14 +31,13 @@ fn trans(x: Dual, y0: Dual, x0: Dual, dx: Dual) -> Dual {
             + 4.0 * Dual::powi(dx, 2) * (x - x0)
             + 10.0 * dx * Dual::powi(x - x0, 2)
             + 20.0 * Dual::powi(x - x0, 3))
-            * Dual::powi(dx - x + x0, 4)
-            * y0)
+            * Dual::powi(dx - x + x0, 4))
             / Dual::powi(dx, 7)
     }
 }
 
-fn trans_dual(x: Dual, y0: f64, x0: f64, dx: f64) -> Dual {
-    trans(x, y0.into(), x0.into(), dx.into())
+fn trans_dual(x: Dual, x0: f64, dx: f64) -> Dual {
+    trans(x, x0.into(), dx.into())
 }
 
 impl WarpDriveOurs {
@@ -169,17 +168,17 @@ impl WarpDriveOurs {
     }
 
     fn vx_dual(&self, lr: Dual) -> Dual {
-        let f = trans_dual(lr, 1.0, self.radius, self.sigma);
+        let f = trans_dual(lr, self.radius, self.sigma);
         self.u0 * f
     }
 
     fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual {
         let r0 = self.radius + self.deflector_sigma_pushout * self.sigma;
         let s0 = self.deflector_sigma_factor * self.sigma;
-        let fa = trans_dual(lr - r0.into(), 1.0, 0.0, s0);
-        let fb = trans_dual(-lr + r0.into(), 1.0, 0.0, s0);
+        let fa = trans_dual(lr - r0.into(), 0.0, s0);
+        let fb = trans_dual(-lr + r0.into(), 0.0, s0);
         let fc = (1.0 - self.deflector_back)
-            * trans_dual(-x_dual + self.sigma.into(), 1.0, 0.0, self.sigma)
+            * trans_dual(-x_dual + self.sigma.into(), 0.0, self.sigma)
             + self.deflector_back.into();
         self.k0 * fa * fb * fc
     }
