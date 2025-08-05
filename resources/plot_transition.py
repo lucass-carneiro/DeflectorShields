@@ -12,52 +12,41 @@ mpl.rcParams["text.latex.preamble"] = r"\usepackage{amsmath}"
 # Figure sizes
 mpl.rcParams["lines.linewidth"] = 2.0
 
-def E(x, y0, x0, dx):
-    x1 = 1.0 / (x0 - x)
-    x2 = 1.0 / (x0 - x + dx)
-    return dx * (x1 + x2)
-
-
-def R(x, y0, x0, dx):
-    x1 = x0 - x
-    num = y0 * dx * (2.0 * x1**2 + 2.0 * x1 * dx + dx**2)
-    den = 4.0 * x1**2 * (x1 + dx)**2
-    return -num / den
+EPS = 1.0e-12
 
 
 def f(x, y0, x0, dx):
-    if x0 < x and x < (x0 + dx):
-        return y0 / (1.0 + np.exp(E(x, y0, x0, dx)))
-    elif x > x0:
+    if x < x0:
+        return y0
+    elif x > (dx + x0):
         return 0.0
     else:
-        return 1.0
+        return ((dx**3 + 4*dx**2*(x - x0) + 10*dx*(x - x0)**2 + 20*(x - x0)**3)*(dx - x + x0)**4*y0)/dx**7
 
 
 def dfdx(x, y0, x0, dx):
-    if x0 < x and x < (x0 + dx):
-        sech = 1.0 / np.cosh(E(x, y0, x0, dx) / 2.0)
-        return R(x, y0, x0, dx) * sech**2
-    else:
+    if x < x0 or (dx + x0) < x:
         return 0.0
+    else:
+        return (-140*(x - x0)**3*(dx - x + x0)**3*y0)/dx**7
 
 
 def plot_f():
     y0 = 1.0
     x0 = 0.25
     dx = 0.5
-    
+
     x = np.arange(0.0, 1.0, 1.0 / 100.0)
-    
+
     plt.close("all")
-    
+
     plt.plot(
         x,
         np.vectorize(f)(x, y0, x0, dx),
         color="black",
         label=r"$f(x;\, y_0, x_0, \Delta_x)$"
     )
-    
+
     plt.plot(
         x,
         np.vectorize(dfdx)(x, y0, x0, dx),
@@ -67,7 +56,7 @@ def plot_f():
 
     plt.axvline(x=x0, color="tab:blue",  linestyle='--')
     plt.axvline(x=x0 + dx, color="tab:blue",  linestyle='--')
-    
+
     plt.xlabel(r"$x$")
     plt.ylabel(r"$y$")
 
