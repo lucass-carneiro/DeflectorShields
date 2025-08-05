@@ -17,8 +17,8 @@ mpl.rcParams["lines.linewidth"] = 2.0
 
 
 def main():
-    index = 1
-    lims = 15
+    index = 0
+    lims = 20
     point_size = 1
     legend_size = 8
 
@@ -99,7 +99,7 @@ def main():
     plt.gca().set_aspect("equal")
 
     plt.tight_layout()
-    plt.savefig(f"img/fixed_point_{index}.pdf", bbox_inches="tight")
+    plt.savefig(f"img/fixed_point_{index}.png", bbox_inches="tight", dpi=300)
 
 
 main()
