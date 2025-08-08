@@ -172,6 +172,12 @@ impl WarpDriveOurs {
         self.u0 * f
     }
 
+    pub fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64{
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(x.into(), y.into(), z.into());
+        self.v_base_dual(x.into(), lr).f
+    }
+
     fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual {
         let r0 = self.radius + self.deflector_sigma_pushout * self.sigma;
         let s0 = self.deflector_sigma_factor * self.sigma;
