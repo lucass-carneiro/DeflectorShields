@@ -17,18 +17,18 @@ mpl.rcParams["lines.linewidth"] = 2.0
 
 
 def main():
-    index = 0
+    index = 1
     lims = 20
     point_size = 1
-    legend_size = 8
+    legend_size = 7
+    R = 4.0
+    sigma = 4.0
 
     path_1 = os.path.join(f"fixed_point_{index}", "fixed_point_1.txt")
     path_2 = os.path.join(f"fixed_point_{index}", "fixed_point_2.txt")
-    path_3 = os.path.join(f"fixed_point_{index}", "fixed_point_3.txt")
 
     data_1 = np.loadtxt(path_1)
     data_2 = np.loadtxt(path_2)
-    data_3 = np.loadtxt(path_3)
 
     plt.close("all")
 
@@ -46,16 +46,9 @@ def main():
         s=point_size
     )
 
-    plt.scatter(
-        data_3[:, 0],
-        data_3[:, 1],
-        color="tab:orange",
-        s=point_size
-    )
-
     radius = plt.Circle(
         (0.0, 0.0),
-        4.0,
+        R + sigma,
         color="black",
         linestyle="--",
         fill=False,
@@ -64,7 +57,7 @@ def main():
 
     radius_p_sigma = plt.Circle(
         (0.0, 0.0),
-        8.0,
+        R + 2.0 * sigma,
         color="black",
         linestyle="--",
         fill=False,
@@ -77,14 +70,12 @@ def main():
     custom_lines = [
         Line2D([0], [0], color="tab:blue",),
         Line2D([0], [0], color="tab:red"),
-        Line2D([0], [0], color="tab:orange")
     ]
     plt.legend(
         custom_lines,
         [
             r"$\mathrm{d}Y/\mathrm{d}t = 0$",
-            r"$\mathrm{d}V^x/\mathrm{d}t = 0$",
-            r"$\mathrm{d}V^y/\mathrm{d}t = 0$",
+            r"$\mathrm{d}V^x/\mathrm{d}t = \mathrm{d}V^y/\mathrm{d}t = 0$",
         ],
         prop={"size": legend_size},
         loc="upper right"
