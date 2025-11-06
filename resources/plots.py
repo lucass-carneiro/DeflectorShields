@@ -162,8 +162,10 @@ def plot_multiple_kernel(prefix, ipc_file_name, anim_folder, radius, sigma, ent_
 def plot_multiple(prefix, parameters, follow_bubble, save_pdf, range_factor):
     logger.info("Plotting multiple particle data")
 
-    radius = parameters["warp_drive"]["radius"]
-    sigma = parameters["warp_drive"]["sigma"]
+    # This assumes that any warp drive will have "sigma" and "radius" parameters
+    wd_name = next(iter(parameters["warp_drive"]))
+    radius = parameters["warp_drive"][wd_name]["radius"]
+    sigma = parameters["warp_drive"][wd_name]["sigma"]
 
     anim_folder = f"{prefix}_anim"
 

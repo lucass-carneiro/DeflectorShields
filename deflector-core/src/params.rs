@@ -1,6 +1,6 @@
 use crate::errors::ParamError;
 use crate::types::ParticleType;
-
+use crate::wd_natario::WarpDriveNatario;
 use crate::wd_ours::WarpDriveOurs;
 
 #[derive(Debug, serde::Deserialize)]
@@ -31,8 +31,21 @@ pub enum InitialData {
 }
 
 #[derive(Debug, serde::Deserialize)]
+pub struct CommonParams {
+    pub normalize_as: ParticleType,
+    pub time_integration: TimeData,
+    pub initial_data: InitialData,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub enum WarpDriveType {
+    Natario(WarpDriveNatario),
+    Ours(WarpDriveOurs),
+}
+
+#[derive(Debug, serde::Deserialize)]
 pub struct Params {
-    pub warp_drive: WarpDriveOurs,
+    pub warp_drive: WarpDriveType,
     pub normalize_as: ParticleType,
     pub time_integration: TimeData,
     pub initial_data: InitialData,
@@ -49,7 +62,7 @@ pub fn read_params(file_name: &str) -> Result<Params, ParamError> {
         }
     };
 
-    match serde_json::from_str::<Params>(&par_file) {
+    match serde_json::from_str(&par_file) {
         Ok(o) => Ok(o),
         Err(e) => Err(ParamError::FileParseError {
             file_name: String::from(file_name),
