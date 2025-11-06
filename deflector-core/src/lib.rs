@@ -14,4 +14,5 @@ pub mod params;
 mod dual;
 pub mod types;
 pub mod warp_drive;
+pub mod wd_natario;
 pub mod wd_ours;

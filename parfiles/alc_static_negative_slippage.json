@@ -1,14 +1,16 @@
 {
     "warp_drive": {
-        "radius": 4.0,
-        "sigma": 4.0,
-        "u": 0.25,
-        "u0": 0.5,
-        "k0": 0.0,
-        "x0": 0.0,
-        "t0": 0.0,
-        "gamma": 0.0,
-        "epsilon": 1.0e-12
+        "Ours": {
+            "radius": 4.0,
+            "sigma": 4.0,
+            "u": 0.25,
+            "u0": 0.5,
+            "k0": 0.0,
+            "x0": 0.0,
+            "t0": 0.0,
+            "gamma": 0.0,
+            "epsilon": 1.0e-12
+        }
     },
     "normalize_as": "Massive",
     "time_integration": {

@@ -1,20 +1,17 @@
 {
     "warp_drive": {
-        "Ours": {
+        "Natario": {
             "radius": 4.0,
             "sigma": 4.0,
             "u": 0.5,
-            "u0": 0.25,
-            "k0": 0.0,
             "x0": 0.0,
             "t0": 0.0,
-            "gamma": 0.0,
             "epsilon": 1.0e-12
         }
     },
     "normalize_as": "Massive",
     "time_integration": {
-        "final_time": 150.0,
+        "final_time": 300.0,
         "time_step": 0.1,
         "out_every": 10
     },
