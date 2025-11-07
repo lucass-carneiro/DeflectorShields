@@ -2,7 +2,7 @@ use crate::debug::is_normalized;
 use crate::types::{ParticleState, ParticleType};
 use crate::warp_drive::WarpDrive;
 
-pub fn rk4_step<T: WarpDrive>(
+pub fn rk4_step<T: WarpDrive + ?Sized>(
     time: f64,
     step_size: f64,
     warp_drive: &T,
@@ -24,7 +24,7 @@ pub fn rk4_step<T: WarpDrive>(
     *state = y0 + step_size * (k1 / 6.0 + k2 / 3.0 + k3 / 3.0 + k4 / 6.0);
 }
 
-pub fn rk4_step_adaptive<T: WarpDrive>(
+pub fn rk4_step_adaptive<T: WarpDrive + ?Sized>(
     time: f64,
     step_size: f64,
     warp_drive: &T,

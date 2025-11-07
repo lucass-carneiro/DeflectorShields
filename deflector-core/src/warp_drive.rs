@@ -1,4 +1,5 @@
 use crate::errors::{InitializationError, NormalizationError};
+use crate::evolve::rk4_step_adaptive;
 use crate::types::ParticleState;
 use crate::types::ParticleType;
 
@@ -21,6 +22,16 @@ pub trait WarpDrive {
         t: f64,
         old_ship_state: &mut ParticleState<f64>,
     ) -> Result<(), InitializationError>;
+
+    fn rk4_step_adaptive(
+        &self,
+        time: f64,
+        step_size: f64,
+        state: &mut ParticleState<f64>,
+        particle_type: &ParticleType
+    ) {
+        rk4_step_adaptive(time, step_size, self, state, particle_type);
+    }
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
