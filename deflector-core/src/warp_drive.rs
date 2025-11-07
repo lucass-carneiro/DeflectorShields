@@ -10,7 +10,7 @@ pub trait WarpDrive {
         t: f64,
         old_ship_state: &mut ParticleState<f64>,
         restart_parameters: &Self,
-    ) -> Result<(), InitializationError>;
+    ) -> Result<(), InitializationError> where Self: Sized;
 
     fn get_bubble_position(&self, t: f64) -> f64;
 
