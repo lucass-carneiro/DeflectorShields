@@ -67,6 +67,41 @@ impl WarpDriveOurs {
         }
     }
 
+    pub fn resume(
+        t: f64,
+        radius: f64,                  // Bubble radius
+        sigma: f64,                   // Bubble transition region width
+        u: f64,                       // Bubble speed
+        u0: f64,                      // Dragging speed
+        k0: f64,                      // Deflection stength
+        x0: f64,                      // Initial bubble position
+        t0: f64,                      // Initial bubble time
+        deflector_sigma_pushout: f64, // TODO: Document
+        deflector_sigma_factor: f64,  // TODO: Document
+        deflector_back: f64,          // Should be 1.0 or 0.0. TODO: Why? Document.
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Self {
+        let mut wd = WarpDriveOurs {
+            radius,
+            sigma,
+            u,
+            u0,
+            k0,
+            deflector_sigma_pushout: deflector_sigma_pushout,
+            deflector_sigma_factor: deflector_sigma_factor,
+            deflector_back: deflector_back,
+            x0,
+            t0,
+            gamma: 0.0,
+            epsilon: 1.0e-12,
+        };
+
+        wd.shut_up(t, old_ship_state, &wd.clone())
+            .expect("Resuming didn't.");
+
+        return wd;
+    }
+
     pub fn get_radius(&self) -> f64 {
         self.radius
     }
@@ -172,7 +207,7 @@ impl WarpDriveOurs {
         self.u0 * f
     }
 
-    pub fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64{
+    pub fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
         let lr = self.r_dual(x.into(), y.into(), z.into());
         self.v_base_dual(x.into(), lr).f
