@@ -69,37 +69,37 @@ impl WarpDriveOurs {
 
     pub fn resume(
         t: f64,
-        radius: f64,                  // Bubble radius
-        sigma: f64,                   // Bubble transition region width
-        u: f64,                       // Bubble speed
-        u0: f64,                      // Dragging speed
-        k0: f64,                      // Deflection stength
-        x0: f64,                      // Initial bubble position
-        t0: f64,                      // Initial bubble time
-        deflector_sigma_pushout: f64, // TODO: Document
-        deflector_sigma_factor: f64,  // TODO: Document
-        deflector_back: f64,          // Should be 1.0 or 0.0. TODO: Why? Document.
+        radius: f64,
+        sigma: f64,
+        u: f64,
+        u0: f64,
+        k0: f64,
+        x0: f64,
+        t0: f64,
+        deflector_sigma_pushout: f64,
+        deflector_sigma_factor: f64,
+        deflector_back: f64,
         old_ship_state: &mut ParticleState<f64>,
     ) -> Self {
-        let mut wd = WarpDriveOurs {
+        let mut wd = Self {
             radius,
             sigma,
             u,
             u0,
             k0,
-            deflector_sigma_pushout: deflector_sigma_pushout,
-            deflector_sigma_factor: deflector_sigma_factor,
-            deflector_back: deflector_back,
+            deflector_sigma_pushout,
+            deflector_sigma_factor,
+            deflector_back,
             x0,
             t0,
             gamma: 0.0,
             epsilon: 1.0e-12,
         };
 
-        wd.shut_up(t, old_ship_state, &wd.clone())
-            .expect("Resuming didn't.");
+        wd.adjust_ship_state(t, old_ship_state)
+            .expect("Unable to resume warp drive state");
 
-        return wd;
+        wd
     }
 
     pub fn get_radius(&self) -> f64 {
@@ -190,6 +190,41 @@ impl WarpDriveOurs {
         self.deflector_back = new_deflector_back;
     }
 
+    /// This function force the position of the bubble to be where the ship is.
+    /// This is required because slippage can cause the ship to go back
+    fn adjust_ship_state(
+        &mut self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Result<(), InitializationError> {
+        self.x0 = old_ship_state[0];
+        self.t0 = t;
+
+        // Compute the new ship state
+        let vx = self.u - self.u0;
+
+        if vx > 1.0 {
+            return Err(InitializationError::from(SlippageError {
+                u: self.u,
+                u0: self.u0,
+            }));
+        }
+
+        let new_ship_state = self.make_normalized_state(
+            old_ship_state[0],
+            0.0,
+            0.0,
+            vx,
+            0.0,
+            0.0,
+            &ParticleType::Massive,
+        )?;
+
+        *old_ship_state = new_ship_state;
+
+        Ok(())
+    }
+
     fn r_dual(&self, x: Dual, y: Dual, z: Dual) -> Dual {
         Dual::sqrt(self.epsilon + Dual::powi(y, 2) + Dual::powi(z, 2) + Dual::powi(x, 2))
     }
@@ -251,35 +286,7 @@ impl WarpDrive for WarpDriveOurs {
         self.deflector_sigma_pushout = restart_parameters.get_deflector_sigma_pushout();
         self.deflector_sigma_factor = restart_parameters.get_deflector_sigma_factor();
         self.deflector_back = restart_parameters.get_deflector_back();
-
-        // We force the position of the bubble to be where the ship is.
-        // This is required because slippage can cause the ship to go back
-        self.x0 = old_ship_state[0];
-        self.t0 = t;
-
-        // Compute the new ship state
-        let vx = self.u - self.u0;
-
-        if vx > 1.0 {
-            return Err(InitializationError::from(SlippageError {
-                u: self.u,
-                u0: self.u0,
-            }));
-        }
-
-        let new_ship_state = self.make_normalized_state(
-            old_ship_state[0],
-            0.0,
-            0.0,
-            vx,
-            0.0,
-            0.0,
-            &ParticleType::Massive,
-        )?;
-
-        *old_ship_state = new_ship_state;
-
-        Ok(())
+        self.adjust_ship_state(t, old_ship_state)
     }
 
     fn get_bubble_position(&self, t: f64) -> f64 {

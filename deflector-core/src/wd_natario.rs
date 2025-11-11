@@ -1,4 +1,5 @@
-use crate::types::ParticleType;
+use crate::errors::InitializationError;
+use crate::types::{ParticleState, ParticleType};
 use crate::warp_drive::WarpDrive;
 
 #[derive(Debug, Clone)]
@@ -22,6 +23,31 @@ impl WarpDriveNatario {
             t0: 0.0,
             epsilon: 1.0e-12,
         }
+    }
+
+    pub fn resume(
+        t: f64,
+        radius: f64,
+        sigma: f64,
+        u: f64,
+        x0: f64,
+        t0: f64,
+        epsilon: f64,
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Self {
+        let mut wd = Self {
+            radius,
+            sigma,
+            u,
+            x0,
+            t0,
+            epsilon,
+        };
+
+        wd.adjust_ship_state(t, old_ship_state)
+            .expect("Unable to resume warp drive state");
+
+        wd
     }
 
     pub fn get_radius(&self) -> f64 {
@@ -48,6 +74,29 @@ impl WarpDriveNatario {
         self.x0 = self.get_bubble_position(t);
         self.t0 = t;
         self.u = new_u;
+    }
+
+    fn adjust_ship_state(
+        &mut self,
+        t: f64,
+        old_ship_state: &mut ParticleState<f64>,
+    ) -> Result<(), InitializationError> {
+        self.x0 = old_ship_state[0];
+        self.t0 = t;
+
+        let new_ship_state = self.make_normalized_state(
+            old_ship_state[0],
+            0.0,
+            0.0,
+            self.u,
+            0.0,
+            0.0,
+            &ParticleType::Massive,
+        )?;
+
+        *old_ship_state = new_ship_state;
+
+        Ok(())
     }
 
     fn r(&self, t: f64, x: f64, y: f64, z: f64) -> f64 {
@@ -159,23 +208,7 @@ impl WarpDrive for WarpDriveNatario {
         self.radius = restart_parameters.get_radius();
         self.sigma = restart_parameters.get_sigma();
         self.u = restart_parameters.get_u();
-
-        self.x0 = old_ship_state[0];
-        self.t0 = t;
-
-        let new_ship_state = self.make_normalized_state(
-            old_ship_state[0],
-            0.0,
-            0.0,
-            self.u,
-            0.0,
-            0.0,
-            &ParticleType::Massive,
-        )?;
-
-        *old_ship_state = new_ship_state;
-
-        Ok(())
+        self.adjust_ship_state(t, old_ship_state)
     }
 
     fn get_bubble_position(&self, t: f64) -> f64 {
