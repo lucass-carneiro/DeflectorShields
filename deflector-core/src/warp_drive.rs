@@ -11,7 +11,9 @@ pub trait WarpDrive {
         t: f64,
         old_ship_state: &mut ParticleState<f64>,
         restart_parameters: &Self,
-    ) -> Result<(), InitializationError> where Self: Sized;
+    ) -> Result<(), InitializationError>
+    where
+        Self: Sized;
 
     fn get_bubble_position(&self, t: f64) -> f64;
 
@@ -28,7 +30,7 @@ pub trait WarpDrive {
         time: f64,
         step_size: f64,
         state: &mut ParticleState<f64>,
-        particle_type: &ParticleType
+        particle_type: &ParticleType,
     ) {
         rk4_step_adaptive(time, step_size, self, state, particle_type);
     }
