@@ -1,7 +1,7 @@
 use crate::dual::Dual;
 use crate::errors::{InitializationError, SlippageError};
 use crate::types::{ParticleState, ParticleType};
-use crate::warp_drive::WarpDrive;
+use crate::warp_drive::{WarpDrive, WarpDriveVBase};
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "jason_parfiles", derive(serde::Deserialize))]
@@ -207,12 +207,6 @@ impl WarpDriveOurs {
         self.u0 * f
     }
 
-    pub fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64 {
-        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
-        let lr = self.r_dual(x.into(), y.into(), z.into());
-        self.v_base_dual(x.into(), lr).f
-    }
-
     fn v_base_dual(&self, x_dual: Dual, lr: Dual) -> Dual {
         let r0 = self.radius + self.deflector_sigma_pushout * self.sigma;
         let s0 = self.deflector_sigma_factor * self.sigma;
@@ -322,6 +316,11 @@ impl WarpDrive for WarpDriveOurs {
         *old_ship_state = new_ship_state;
         Ok(())
     }
+
+    fn as_warp_drive_v_base(&self) -> Option<&dyn WarpDriveVBase> {
+        Some(self)
+    }
+
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64 {
         let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
@@ -454,5 +453,13 @@ impl WarpDrive for WarpDriveOurs {
 
     fn d_alp_dz(&self, _: &nalgebra::Vector4<f64>) -> f64 {
         0.0
+    }
+}
+
+impl WarpDriveVBase for WarpDriveOurs {
+    fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64 {
+        let (x, y, z) = (q[1] - self.get_bubble_position(q[0]), q[2], q[3]);
+        let lr = self.r_dual(x.into(), y.into(), z.into());
+        self.v_base_dual(x.into(), lr).f
     }
 }

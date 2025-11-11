@@ -32,6 +32,10 @@ pub trait WarpDrive {
     ) {
         rk4_step_adaptive(time, step_size, self, state, particle_type);
     }
+    
+    fn as_warp_drive_v_base(&self) -> Option<&dyn WarpDriveVBase> {
+        None
+    }
 
     fn vx(&self, q: &nalgebra::Vector4<f64>) -> f64;
     fn vy(&self, q: &nalgebra::Vector4<f64>) -> f64;
@@ -177,4 +181,8 @@ pub trait WarpDrive {
             dx_dt, dy_dt, dz_dt, dvelx_dt, dvely_dt, dvelz_dt, denergy_dt,
         ])
     }
+}
+
+pub trait WarpDriveVBase: WarpDrive {
+    fn v_base(&self, q: &nalgebra::Vector4<f64>) -> f64;
 }
